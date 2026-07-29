@@ -210,20 +210,28 @@ export default function Home() {
                 { icon: Wrench, title: "Manutenção Especializada", desc: "Reparos complexos de placa, troca de telas, baterias e conectores com peças de altíssima qualidade." },
                 { icon: Headphones, title: "Acessórios Premium", desc: "Proteção e estilo: capas, películas blindadas, fones de ouvido e carregadores originais." },
                 { icon: ShieldCheck, title: "Consultoria e Venda", desc: "Orientação técnica especializada para você encontrar o smartphone perfeito para o seu uso." }
-              ].map((srv, idx) => (
-                <motion.div 
-                  key={idx}
-                  initial="hidden" whileInView="visible" viewport={{ once: true }}
-                  variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { delay: idx * 0.2 }}}}
-                  className="glass p-8 rounded-2xl hover:border-yellow-500/50 transition-colors group"
-                >
-                  <div className="w-14 h-14 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500 mb-6 group-hover:bg-gradient-accent group-hover:text-white transition-all shadow-lg">
-                    <srv.icon size={28} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 font-outfit">{srv.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{srv.desc}</p>
-                </motion.div>
-              ))}
+              ].map((srv, idx) => {
+                const message = `Olá! Gostaria de saber mais sobre: ${srv.title}`;
+                const encodedMessage = encodeURIComponent(message);
+                
+                return (
+                  <motion.a 
+                    key={idx}
+                    href={`https://wa.me/${whatsappNumber}?text=${encodedMessage}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { delay: idx * 0.2 }}}}
+                    className="glass p-8 rounded-2xl hover:border-yellow-500/50 transition-colors group cursor-pointer block"
+                  >
+                    <div className="w-14 h-14 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500 mb-6 group-hover:bg-gradient-accent group-hover:text-white transition-all shadow-lg">
+                      <srv.icon size={28} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 font-outfit">{srv.title}</h3>
+                    <p className="text-slate-400 leading-relaxed">{srv.desc}</p>
+                  </motion.a>
+                );
+              })}
             </div>
           </div>
         </section>

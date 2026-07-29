@@ -35,7 +35,8 @@ export default function Home() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt";
     fetch(`${apiUrl}/api/vitrine`, {
       headers: {
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     })
       .then(res => {

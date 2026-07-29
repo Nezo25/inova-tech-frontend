@@ -23,7 +23,8 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          'ngrok-skip-browser-warning': 'true',
+          'Bypass-Tunnel-Reminder': 'true'
         },
         body: JSON.stringify({ login, senha })
       });

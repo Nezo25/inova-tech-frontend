@@ -48,7 +48,8 @@ export default function SolicitarServicoPage() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
         },
         body: JSON.stringify({
           nomeCliente: formData.nomeCliente,

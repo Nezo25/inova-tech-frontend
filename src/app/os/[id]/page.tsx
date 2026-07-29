@@ -13,7 +13,8 @@ export default function OSPage() {
     if (id) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/clientes/${id}`, {
         headers: {
-          'ngrok-skip-browser-warning': 'true'
+          'ngrok-skip-browser-warning': 'true',
+          'Bypass-Tunnel-Reminder': 'true'
         }
       })
         .then((res) => {

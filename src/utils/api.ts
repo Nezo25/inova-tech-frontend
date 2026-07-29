@@ -10,6 +10,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   }
   
   headers.set('ngrok-skip-browser-warning', 'true');
+  headers.set('Bypass-Tunnel-Reminder', 'true');
 
   return fetch(url, {
     ...options,

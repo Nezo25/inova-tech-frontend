@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -35,11 +33,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-[#07090f] text-foreground antialiased selection:bg-cyan-500/30;
+    background-color: #07090f;
+    color: hsl(var(--foreground));
+    @apply antialiased selection:bg-cyan-500/30;
   }
 }
 
@@ -48,9 +45,9 @@
 }
 
 .text-gradient {
-  @apply bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-yellow-500 to-yellow-300 bg-clip-text text-transparent;
 }
 
 .bg-gradient-accent {
-  @apply bg-gradient-to-r from-cyan-400 to-purple-500;
+  @apply bg-gradient-to-r from-yellow-600 to-yellow-500;
 }

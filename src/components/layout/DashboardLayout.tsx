@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { parseCookies, destroyCookie } from "nookies";
-import { LayoutDashboard, Users, ArrowRightLeft, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, Users, ArrowRightLeft, LogOut, Store, Package, Smartphone, Headphones, Wrench } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -109,6 +109,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Link href="/dashboard/financeiro" className={navItemClass('/dashboard/financeiro')}>
             <ArrowRightLeft size={20} className={iconClass('/dashboard/financeiro')} />
             <span className="md:inline">Finanças</span>
+          </Link>
+          
+          <Link href="/dashboard/orcamentos" className={navItemClass('/dashboard/orcamentos')}>
+            <Package size={20} className={iconClass('/dashboard/orcamentos')} />
+            <span className="md:inline">Orçamentos</span>
+          </Link>
+          
+          <Link href="/dashboard/estoque?tipo=IPHONE" className={navItemClass('/dashboard/estoque?tipo=IPHONE')}>
+            <Smartphone size={20} className={iconClass('/dashboard/estoque?tipo=IPHONE')} />
+            <span className="md:inline">iPhones</span>
+          </Link>
+
+          <Link href="/dashboard/estoque?tipo=ACESSORIO" className={navItemClass('/dashboard/estoque?tipo=ACESSORIO')}>
+            <Headphones size={20} className={iconClass('/dashboard/estoque?tipo=ACESSORIO')} />
+            <span className="md:inline">Acessórios</span>
+          </Link>
+
+          <Link href="/dashboard/estoque?tipo=PECA" className={navItemClass('/dashboard/estoque?tipo=PECA')}>
+            <Wrench size={20} className={iconClass('/dashboard/estoque?tipo=PECA')} />
+            <span className="md:inline">Peças</span>
           </Link>
           
           <Link href="/dashboard/vitrine" className={navItemClass('/dashboard/vitrine')}>

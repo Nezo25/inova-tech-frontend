@@ -1,0 +1,300 @@
+"use client";
+
+import React, { useEffect, useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { apiFetch } from '@/utils/api';
+import { Plus, Edit, Trash2, Box, X, AlertTriangle } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+
+function EstoqueDashboardContent() {
+  const searchParams = useSearchParams();
+  const tipoParam = searchParams.get("tipo") || "PECA";
+  const isIphone = tipoParam === "APARELHO";
+  const titulo = isIphone ? "Aparelhos / iPhones" : tipoParam === "ACESSORIO" ? "Acessórios" : "Peças de Reposição";
+  const botaoTexto = isIphone ? "Aparelho" : tipoParam === "ACESSORIO" ? "Acessório" : "Peça";
+
+  const [pecas, setPecas] = useState<any[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    id: null as number | null,
+    nome: "",
+    modelo: "",
+    marca: isIphone ? "Apple" : "",
+    cor: "",
+    custo: "",
+    precoVenda: "",
+    quantidadeEstoque: "",
+    estoqueMinimo: "3",
+    categoria: tipoParam,
+    ativo: true
+  });
+
+  useEffect(() => {
+    fetchPecas();
+  }, [tipoParam]); // Re-fetch on query change if needed
+
+  const fetchPecas = () => {
+    apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas`)
+      .then(res => res.json())
+      .then(data => {
+          // Filtragem baseada no campo 'categoria' retornado pela API
+          const filtradas = data.filter((p: any) => {
+              const cat = p.categoria || 'PECA'; // default para itens antigos
+              return cat === tipoParam;
+          });
+          setPecas(filtradas);
+      })
+      .catch(err => {
+        console.error(err);
+        toast.error("Erro ao carregar estoque");
+      });
+  };
+
+  const calcularMargem = (custoStr: string, vendaStr: string) => {
+      const custo = parseFloat(custoStr.replace(',', '.')) || 0;
+      const venda = parseFloat(vendaStr.replace(',', '.')) || 0;
+      if (venda === 0) return 0;
+      return ((venda - custo) / venda) * 100;
+  };
+
+  const margemAtual = useMemo(() => {
+      return calcularMargem(formData.custo.toString(), formData.precoVenda.toString());
+  }, [formData.custo, formData.precoVenda]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const url = isEditing 
+        ? `${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/${formData.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas`;
+        
+    const method = isEditing ? "PUT" : "POST";
+    const loadingToast = toast.loading("Salvando...");
+
+    const payload = {
+        ...formData,
+        custo: parseFloat(formData.custo.toString().replace(',', '.')),
+        precoVenda: parseFloat(formData.precoVenda.toString().replace(',', '.')),
+        quantidadeEstoque: parseInt(formData.quantidadeEstoque.toString()),
+        estoqueMinimo: parseInt(formData.estoqueMinimo.toString()),
+        categoria: formData.categoria
+    };
+
+    apiFetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+      })
+      .then(() => {
+        toast.success("Salvo com sucesso!", { id: loadingToast });
+        setShowModal(false);
+        fetchPecas();
+      })
+      .catch(() => toast.error("Erro ao salvar", { id: loadingToast }));
+  };
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Tem certeza que deseja excluir?")) return;
+    
+    const loadingToast = toast.loading("Excluindo...");
+    apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/${id}`, { method: "DELETE" })
+      .then(res => {
+          if (!res.ok) throw new Error();
+          toast.success("Excluído com sucesso", { id: loadingToast });
+          fetchPecas();
+      })
+      .catch(() => toast.error("Erro ao excluir", { id: loadingToast }));
+  };
+
+  const openNewModal = () => {
+      setFormData({ 
+          id: null, 
+          nome: "", 
+          modelo: "", 
+          marca: isIphone ? "Apple" : "", 
+          cor: "", 
+          custo: "", 
+          precoVenda: "", 
+          quantidadeEstoque: "", 
+          estoqueMinimo: "3", 
+          categoria: tipoParam,
+          ativo: true 
+      });
+      setIsEditing(false);
+      setShowModal(true);
+  };
+
+  const openEditModal = (p: any) => {
+      setFormData({
+          id: p.id,
+          nome: p.nome,
+          modelo: p.modelo || "",
+          marca: p.marca || "",
+          cor: p.cor || "",
+          custo: p.custo.toString(),
+          precoVenda: p.precoVenda.toString(),
+          quantidadeEstoque: p.quantidadeEstoque.toString(),
+          estoqueMinimo: (p.estoqueMinimo || 3).toString(),
+          categoria: p.categoria || "PECA",
+          ativo: p.ativo
+      });
+      setIsEditing(true);
+      setShowModal(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Toaster position="top-right" />
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold font-outfit text-white">Estoque: {titulo}</h1>
+          <p className="text-slate-400">Gerencie o inventário de {titulo.toLowerCase()}.</p>
+        </div>
+        <button onClick={openNewModal} className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors">
+          <Plus size={20} /> Novo(a) {botaoTexto}
+        </button>
+      </div>
+
+      <div className="bg-[#07090f] border border-white/5 rounded-xl overflow-hidden shadow-xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-900/50 border-b border-white/5">
+                <th className="p-4 text-slate-300 font-medium">Nome / Modelo</th>
+                <th className="p-4 text-slate-300 font-medium">Cor</th>
+                <th className="p-4 text-slate-300 font-medium">Estoque</th>
+                <th className="p-4 text-slate-300 font-medium">Custo</th>
+                <th className="p-4 text-slate-300 font-medium">Venda</th>
+                <th className="p-4 text-slate-300 font-medium">Margem</th>
+                <th className="p-4 text-slate-300 font-medium text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pecas.map(p => {
+                const isEstoqueBaixo = p.quantidadeEstoque <= (p.estoqueMinimo || 3);
+                
+                return (
+                <tr key={p.id} className={`border-b border-white/5 transition-colors ${isEstoqueBaixo ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' : 'hover:bg-white/[0.02]'}`}>
+                  <td className={`p-4 font-medium ${isEstoqueBaixo ? 'text-yellow-500' : 'text-white'}`}>
+                      <div>{p.nome}</div>
+                      <div className={`text-xs ${isEstoqueBaixo ? 'text-yellow-500/70' : 'text-slate-500'}`}>{p.modelo}</div>
+                  </td>
+                  <td className={`p-4 ${isEstoqueBaixo ? 'text-yellow-500' : 'text-slate-300'}`}>{p.cor || '-'}</td>
+                  <td className="p-4">
+                      <div className={`flex items-center gap-2 font-bold ${isEstoqueBaixo ? 'text-yellow-400' : 'text-emerald-500'}`}>
+                          {isEstoqueBaixo && <AlertTriangle size={16} />}
+                          {p.quantidadeEstoque}
+                      </div>
+                  </td>
+                  <td className={`p-4 ${isEstoqueBaixo ? 'text-yellow-500' : 'text-slate-400'}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.custo)}
+                  </td>
+                  <td className={`p-4 font-medium ${isEstoqueBaixo ? 'text-yellow-400' : 'text-white'}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.precoVenda)}
+                  </td>
+                  <td className="p-4">
+                      {p.margemLucroPorcentagem ? (
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${parseFloat(p.margemLucroPorcentagem) > 20 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                              {p.margemLucroPorcentagem}
+                          </span>
+                      ) : '-'}
+                  </td>
+                  <td className="p-4 text-right">
+                    <button onClick={() => openEditModal(p)} className="text-slate-400 hover:text-yellow-500 p-2 transition-colors">
+                      <Edit size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(p.id)} className="text-slate-400 hover:text-red-500 p-2 transition-colors ml-2">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              )})}
+              {pecas.length === 0 && (
+                  <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-500">Nenhum item cadastrado.</td>
+                  </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-white/5 bg-slate-800/50">
+              <h2 className="text-xl font-bold text-white font-outfit">{isEditing ? 'Editar' : 'Novo(a)'} {botaoTexto}</h2>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Nome</label>
+                        <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Modelo</label>
+                        <input type="text" value={formData.modelo} onChange={e => setFormData({...formData, modelo: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    {!isIphone && (
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Marca</label>
+                        <input type="text" value={formData.marca} onChange={e => setFormData({...formData, marca: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    )}
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Cor</label>
+                        <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Preço de Custo (R$)</label>
+                        <input type="number" step="0.01" required value={formData.custo} onChange={e => setFormData({...formData, custo: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Preço de Venda (R$)</label>
+                        <input type="number" step="0.01" required value={formData.precoVenda} onChange={e => setFormData({...formData, precoVenda: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                        <div className="mt-1 text-xs font-bold flex justify-between">
+                            <span className="text-slate-500">Margem estimada:</span>
+                            <span className={margemAtual > 0 ? "text-emerald-400" : "text-slate-400"}>
+                                {margemAtual.toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Estoque Inicial</label>
+                        <input type="number" required value={formData.quantidadeEstoque} onChange={e => setFormData({...formData, quantidadeEstoque: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Alerta de Mínimo</label>
+                        <input type="number" value={formData.estoqueMinimo} onChange={e => setFormData({...formData, estoqueMinimo: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                </div>
+
+                <div className="pt-4 flex justify-end gap-3">
+                    <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button>
+                    <button type="submit" className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold px-6 py-2 rounded transition-colors">Salvar</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function EstoqueDashboardPage() {
+  return (
+    <Suspense fallback={<div className="text-white">Carregando...</div>}>
+      <EstoqueDashboardContent />
+    </Suspense>
+  );
+}

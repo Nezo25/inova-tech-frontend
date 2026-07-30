@@ -81,7 +81,14 @@ export default function VitrinePublicaPage() {
                   )}
                 </div>
                 <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2 font-outfit">{produto.nome}</h3>
+                  <h3 className="text-xl font-bold text-white mb-2 font-outfit">
+                    {produto.nome}
+                    {produto.cor && (
+                        <span className="ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-slate-300 border border-white/10 align-middle">
+                            {produto.cor}
+                        </span>
+                    )}
+                  </h3>
                   <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-3">
                     {produto.descricao}
                   </p>

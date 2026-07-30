@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import { apiFetch } from '@/utils/api';
@@ -17,6 +17,7 @@ export default function VitrineDashboardPage() {
     preco: "",
     descricao: "",
     imagemBase64: "",
+    cor: "",
     ativo: true
   });
 
@@ -104,7 +105,7 @@ export default function VitrineDashboardPage() {
   };
 
   const openNewModal = () => {
-      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", ativo: true });
+      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", ativo: true });
       setIsEditing(false);
       setShowModal(true);
   };
@@ -116,6 +117,7 @@ export default function VitrineDashboardPage() {
           preco: produto.preco.toString(),
           descricao: produto.descricao,
           imagemBase64: produto.imagemBase64,
+          cor: produto.cor || "",
           ativo: produto.ativo
       });
       setIsEditing(true);
@@ -142,6 +144,7 @@ export default function VitrineDashboardPage() {
               <tr className="bg-slate-900/50 border-b border-white/5">
                 <th className="p-4 text-slate-300 font-medium">Foto</th>
                 <th className="p-4 text-slate-300 font-medium">Produto</th>
+                <th className="p-4 text-slate-300 font-medium">Cor</th>
                 <th className="p-4 text-slate-300 font-medium">Preço</th>
                 <th className="p-4 text-slate-300 font-medium">Status</th>
                 <th className="p-4 text-slate-300 font-medium text-right">Ações</th>
@@ -158,6 +161,7 @@ export default function VitrineDashboardPage() {
                       )}
                   </td>
                   <td className="p-4 text-white font-medium">{p.nome}</td>
+                  <td className="p-4 text-slate-400">{p.cor || '-'}</td>
                   <td className="p-4 text-slate-300">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco)}
                   </td>
@@ -229,6 +233,11 @@ export default function VitrineDashboardPage() {
                 <div>
                     <label className="block text-sm text-slate-400 mb-1">Preço (R$)</label>
                     <input type="number" step="0.01" required value={formData.preco} onChange={e => setFormData({...formData, preco: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                </div>
+
+                <div>
+                    <label className="block text-sm text-slate-400 mb-1">Cor</label>
+                    <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                 </div>
 
                 <div>

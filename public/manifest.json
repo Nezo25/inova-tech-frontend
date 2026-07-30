@@ -1,0 +1,17 @@
+{
+  "name": "Inova Tech Celulares",
+  "short_name": "Inova Tech",
+  "description": "Sistema de gestão e portfólio Inova Tech",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "icons": [
+    {
+      "src": "/logo-inovatech.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

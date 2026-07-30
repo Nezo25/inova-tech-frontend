@@ -95,7 +95,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           />
         </Link>
         
-        <nav className="flex-1 flex flex-row justify-around items-center w-full md:flex-col md:space-y-2 md:justify-start">
+        <nav className="flex-1 flex flex-row justify-around items-center w-full md:flex-col md:space-y-2 md:justify-start md:items-stretch">
           <Link href="/dashboard" className={navItemClass('/dashboard')}>
             <LayoutDashboard size={20} className={iconClass('/dashboard')} />
             <span className="md:inline">Geral</span>

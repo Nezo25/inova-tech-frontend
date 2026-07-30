@@ -2,7 +2,7 @@
 import { apiFetch } from '@/utils/api';
 
 import React, { useEffect, useState, useRef } from "react";
-import { UserPlus, Search, Phone, Smartphone as SmartphoneIcon, Camera, Printer, Calendar, MapPin, DollarSign, X, PackageOpen } from "lucide-react";
+import { UserPlus, Search, Phone, Smartphone as SmartphoneIcon, Camera, Printer, Calendar, MapPin, DollarSign, X, PackageOpen, Trash2 } from "lucide-react";
 import { compressImage } from "@/utils/imageUtils";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
@@ -81,6 +81,23 @@ export default function ClientesPage() {
          console.error(err);
          toast.error("Erro ao carregar detalhes do cliente");
       });
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Tem certeza que deseja excluir este cliente? Essa ação não pode ser desfeita.")) {
+      const loadingToast = toast.loading("Excluindo cliente...");
+      apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/clientes/${id}`, {
+        method: "DELETE"
+      })
+      .then(() => {
+         fetchClientes();
+         toast.success("Cliente excluído com sucesso!", { id: loadingToast });
+      })
+      .catch((err) => {
+         console.error(err);
+         toast.error("Erro ao excluir cliente", { id: loadingToast });
+      });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -332,8 +349,8 @@ export default function ClientesPage() {
               className="glass p-6 rounded-2xl hover:border-yellow-500/30 transition-all cursor-pointer flex flex-col justify-between h-full relative"
             >
               <div>
-                  <div className="flex items-start justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-start justify-between gap-4 mb-6 w-full">
+                    <div className="flex-1 min-w-0 flex items-center gap-4">
                         <div className="w-12 h-12 flex-shrink-0 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-400 font-bold text-xl uppercase">
                         {c.nomeCliente.charAt(0)}
                         </div>
@@ -343,6 +360,10 @@ export default function ClientesPage() {
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => handleDelete(c.id)} className="text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 p-1.5 rounded transition-colors" title="Excluir">
+                                <Trash2 size={14} />
+                            </button>
                         <select 
                             value={c.status || "Na Fila"}
                             onChange={(e) => updateStatus(c.id, e.target.value)}
@@ -355,6 +376,7 @@ export default function ClientesPage() {
                             <option value="Pronto para Retirada" className="bg-slate-900 text-white">Pronto para Retirada</option>
                             <option value="Entregue" className="bg-slate-900 text-white">Entregue</option>
                         </select>
+                        </div>
                         <Link href={`/os/${c.id}`} target="_blank" className="text-xs flex items-center gap-1 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 rounded">
                             <Printer size={12} />
                             Imprimir OS

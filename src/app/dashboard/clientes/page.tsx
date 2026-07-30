@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { apiFetch } from '@/utils/api';
 
 import React, { useEffect, useState, useRef } from "react";
@@ -332,17 +332,17 @@ export default function ClientesPage() {
               className="glass p-6 rounded-2xl hover:border-yellow-500/30 transition-all cursor-pointer flex flex-col justify-between h-full relative"
             >
               <div>
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-400 font-bold text-xl uppercase">
+                  <div className="flex items-start justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 flex-shrink-0 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-400 font-bold text-xl uppercase">
                         {c.nomeCliente.charAt(0)}
                         </div>
-                        <div>
-                        <h3 className="text-lg font-bold text-white">{c.nomeCliente}</h3>
+                        <div className="min-w-0">
+                        <h3 className="text-lg font-bold text-white truncate" title={c.nomeCliente}>{c.nomeCliente}</h3>
                         <p className="text-xs text-slate-400">Desde {new Date(c.dataCadastro).toLocaleDateString('pt-BR')}</p>
                         </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                         <select 
                             value={c.status || "Na Fila"}
                             onChange={(e) => updateStatus(c.id, e.target.value)}

@@ -292,9 +292,11 @@ export default function ClientesPage() {
     "Na Fila": "bg-slate-500/20 text-slate-300",
     "Orçamento Web": "bg-purple-500/20 text-purple-400",
     "Orçamento": "bg-blue-500/20 text-blue-400",
-    "Aguardando Peça": "bg-orange-500/20 text-orange-400",
+    "Aguardando Peça": "bg-amber-500/20 text-amber-400",
+    "Aguardando Peça (Sem Estoque)": "bg-red-500/20 text-red-400 border border-red-500/30",
+    "Orçamento Aprovado": "bg-blue-500/20 text-blue-400",
     "Pronto para Retirada": "bg-green-500/20 text-green-400",
-    "Entregue": "bg-yellow-500/20 text-yellow-500"
+    "Entregue e Pago": "bg-emerald-500/20 text-emerald-400"
   };
   
   const pgtoColors: Record<string, string> = {
@@ -373,8 +375,10 @@ export default function ClientesPage() {
                             <option value="Orçamento Web" className="bg-slate-900 text-white">Orçamento Web</option>
                             <option value="Orçamento" className="bg-slate-900 text-white">Orçamento</option>
                             <option value="Aguardando Peça" className="bg-slate-900 text-white">Aguardando Peça</option>
+                            <option value="Aguardando Peça (Sem Estoque)" className="bg-slate-900 text-white">Aguardando Peça (Sem Est.)</option>
+                            <option value="Orçamento Aprovado" className="bg-slate-900 text-white">Orçamento Aprovado</option>
                             <option value="Pronto para Retirada" className="bg-slate-900 text-white">Pronto para Retirada</option>
-                            <option value="Entregue" className="bg-slate-900 text-white">Entregue</option>
+                            <option value="Entregue e Pago" className="bg-slate-900 text-white">Entregue e Pago</option>
                         </select>
                         </div>
                         <Link href={`/os/${c.id}`} target="_blank" className="text-xs flex items-center gap-1 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 rounded">

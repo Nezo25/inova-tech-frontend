@@ -119,6 +119,13 @@ function EstoqueDashboardContent() {
       .catch(() => toast.error("Erro ao excluir", { id: loadingToast }));
   };
 
+  const handleGerarSku = () => {
+    const prefixo = formData.marca ? formData.marca.substring(0, 3).toUpperCase() : 'PEC';
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const skuGerado = `${prefixo}-${Date.now().toString().slice(-4)}-${random}`;
+    setFormData((prev) => ({ ...prev, sku: skuGerado }));
+  };
+
   const openNewModal = () => {
       setFormData({ 
           id: null, 
@@ -153,7 +160,9 @@ function EstoqueDashboardContent() {
           estoqueMinimo: (p.estoqueMinimo || 3).toString(),
           categoria: p.categoria || "PECA",
           ativo: p.ativo,
-          isMarcaOutra: p.marca ? !["Apple", "Samsung", "Xiaomi", "Motorola", "Realme", "LG"].includes(p.marca) : false
+          isMarcaOutra: p.marca ? !["Apple", "Samsung", "Xiaomi", "Motorola", "Realme", "LG"].includes(p.marca) : false,
+          fotoUrl: p.fotoUrl || "",
+          exibirNaVitrine: p.exibirNaVitrine !== undefined ? p.exibirNaVitrine : true
       });
       setIsEditing(true);
       setShowModal(true);
@@ -183,6 +192,7 @@ function EstoqueDashboardContent() {
                 <th className="p-4 text-slate-300 font-medium">Custo</th>
                 <th className="p-4 text-slate-300 font-medium">Venda</th>
                 <th className="p-4 text-slate-300 font-medium">Margem</th>
+                {isAparelho && <th className="p-4 text-slate-300 font-medium">Vitrine</th>}
                 <th className="p-4 text-slate-300 font-medium text-right">Ações</th>
               </tr>
             </thead>
@@ -219,6 +229,16 @@ function EstoqueDashboardContent() {
                           </span>
                       ) : '-'}
                   </td>
+                  {isAparelho && (
+                      <td className="p-4">
+                          {(() => {
+                              if (!p.exibirNaVitrine) return <span className="px-2 py-1 rounded text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">Oculto</span>;
+                              if (p.quantidadeEstoque <= 0) return <span className="px-2 py-1 rounded text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30">Sem Estoque</span>;
+                              if (!p.precoVenda || p.precoVenda <= 0 || !p.fotoUrl) return <span className="px-2 py-1 rounded text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/30" title={!p.fotoUrl ? "Falta foto" : "Falta preço"}>Incompleto</span>;
+                              return <span className="px-2 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Na Vitrine</span>;
+                          })()}
+                      </td>
+                  )}
                   <td className="p-4 text-right">
                     <button onClick={() => openEditModal(p)} className="text-slate-400 hover:text-yellow-500 p-2 transition-colors">
                       <Edit size={18} />
@@ -296,7 +316,7 @@ function EstoqueDashboardContent() {
                             className={`w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white outline-none ${formData.categoria === 'IPHONE' ? 'opacity-50 cursor-not-allowed' : 'focus:border-yellow-500'}`}
                         >
                             <option value="">Selecione...</option>
-                            <option value="Apple">Apple</option>
+                            {formData.categoria !== 'ANDROID' && <option value="Apple">Apple</option>}
                             <option value="Samsung">Samsung</option>
                             <option value="Xiaomi">Xiaomi</option>
                             <option value="Motorola">Motorola</option>
@@ -318,9 +338,28 @@ function EstoqueDashboardContent() {
                         <label className="block text-sm text-slate-400 mb-1">Cor</label>
                         <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                     </div>
-                    <div>
-                        <label className="block text-sm text-slate-400 mb-1">SKU / Código</label>
-                        <input type="text" placeholder="Ex: XTR-9120" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-slate-400">SKU / Código de Barras</label>
+                        <div className="flex gap-2">
+                            <input
+                            type="text"
+                            value={formData.sku || ''}
+                            onChange={(e) => setFormData({ ...formData, sku: e.target.value.toUpperCase() })}
+                            placeholder="Deixe em branco p/ gerar auto"
+                            className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-sm text-white focus:outline-none focus:border-yellow-500"
+                            />
+                            <button
+                            type="button"
+                            onClick={handleGerarSku}
+                            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-yellow-500 border border-slate-700 rounded-md text-xs font-bold transition-colors flex items-center gap-1"
+                            title="Gerar SKU automático"
+                            >
+                            ⚡ Auto
+                            </button>
+                        </div>
+                        <span className="text-[10px] text-slate-500">
+                            Digite o código de barras ou clique em Auto. Se deixar em branco, o sistema gerará no envio.
+                        </span>
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Preço de Custo (R$)</label>
@@ -344,6 +383,32 @@ function EstoqueDashboardContent() {
                         <label className="block text-sm text-slate-400 mb-1">Alerta de Mínimo</label>
                         <input type="number" value={formData.estoqueMinimo} onChange={e => setFormData({...formData, estoqueMinimo: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                     </div>
+                    {isAparelho && (
+                        <>
+                            <div className="col-span-1 md:col-span-2 mt-2 pt-4 border-t border-white/5">
+                                <label className="flex items-center gap-2 text-sm text-white font-medium cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={formData.exibirNaVitrine !== false} 
+                                        onChange={e => setFormData({...formData, exibirNaVitrine: e.target.checked})}
+                                        className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-slate-900 accent-yellow-500" 
+                                    />
+                                    Exibir na Vitrine Pública
+                                </label>
+                                <p className="text-xs text-slate-500 mt-1">Aparelhos sem foto ou sem preço de venda não serão exibidos na loja online, mesmo se marcados.</p>
+                            </div>
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm text-slate-400 mb-1">URL da Foto (Vitrine)</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Ex: https://img.com/foto.jpg" 
+                                    value={formData.fotoUrl || ""} 
+                                    onChange={e => setFormData({...formData, fotoUrl: e.target.value})} 
+                                    className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" 
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="pt-4 flex justify-end gap-3">

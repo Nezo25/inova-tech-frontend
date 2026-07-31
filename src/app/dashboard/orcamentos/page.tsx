@@ -118,7 +118,12 @@ export default function OrcamentosPage() {
         buscarOrcamentos();
         buscarPecas();
       } else {
-        toast.error('Erro ao aprovar. Verifique o estoque ou se já foi aprovado.', { id: t });
+        try {
+          const data = await res.json();
+          toast.error(data.message || 'Erro ao aprovar. Verifique o estoque.', { id: t, duration: 5000 });
+        } catch (e) {
+          toast.error('Erro ao aprovar. Verifique o estoque ou se já foi aprovado.', { id: t });
+        }
       }
     } catch (error) {
       toast.error('Erro de conexão ao aprovar.', { id: t });
@@ -596,11 +601,16 @@ export default function OrcamentosPage() {
                   <td className="px-6 py-4 text-slate-400">{o.dataCriacao ? new Date(o.dataCriacao).toLocaleDateString() : '-'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      o.status === 'APROVADO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      o.status === 'ORCAMENTO_APROVADO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                       : o.status === 'CANCELADO' ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                      : o.status === 'ENTREGUE' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                      : o.status === 'ORCAMENTO_WEB' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                      : o.status === 'AGUARDANDO_PECA_ESTOQUE_ZERADO' || o.status === 'AGUARDANDO_PECA' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                      : o.status === 'PECA_EM_ESTOQUE' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                      : o.status === 'EM_MANUTENCAO' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                      : o.status === 'AGUARDANDO_RETIRADA' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                      : o.status === 'ENTREGUE_E_PAGO' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20'
                       : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'}`}>
-                      {o.status}
+                      {o.status === 'AGUARDANDO_PECA_ESTOQUE_ZERADO' ? 'ESTOQUE ZERADO (AGUARD. PEÇA)' : o.status ? o.status.replace(/_/g, ' ') : ''}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-400">

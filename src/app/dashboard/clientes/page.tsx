@@ -382,20 +382,25 @@ export default function ClientesPage() {
                             <button onClick={() => handleDelete(c.id)} className="text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 p-1.5 rounded transition-colors" title="Excluir">
                                 <Trash2 size={14} />
                             </button>
-                        <select 
-                            value={c.status || "Na Fila"}
-                            onChange={(e) => updateStatus(c.id, e.target.value)}
-                            className={`text-xs px-2 py-1 rounded border border-white/10 outline-none font-bold cursor-pointer ${statusColors[c.status || "Na Fila"] || statusColors["Na Fila"]}`}
-                        >
-                            <option value="Na Fila" className="bg-slate-900 text-white">Na Fila</option>
-                            <option value="Orçamento Web" className="bg-slate-900 text-white">Orçamento Web</option>
-                            <option value="Orçamento" className="bg-slate-900 text-white">Orçamento</option>
-                            <option value="Aguardando Peça" className="bg-slate-900 text-white">Aguardando Peça</option>
-                            <option value="Aguardando Peça (Sem Estoque)" className="bg-slate-900 text-white">Aguardando Peça (Sem Est.)</option>
-                            <option value="Orçamento Aprovado" className="bg-slate-900 text-white">Orçamento Aprovado</option>
-                            <option value="Pronto para Retirada" className="bg-slate-900 text-white">Pronto para Retirada</option>
-                            <option value="Entregue e Pago" className="bg-slate-900 text-white">Entregue e Pago</option>
-                        </select>
+                            {c.statusUltimaOs ? (
+                              <span className={`text-xs px-2 py-1 rounded border border-white/10 outline-none font-bold ${
+                                c.statusUltimaOs === 'ORCAMENTO_APROVADO' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : c.statusUltimaOs === 'CANCELADO' ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                : c.statusUltimaOs === 'ORCAMENTO_WEB' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                : c.statusUltimaOs === 'AGUARDANDO_PECA_ESTOQUE_ZERADO' || c.statusUltimaOs === 'AGUARDANDO_PECA' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                : c.statusUltimaOs === 'PECA_EM_ESTOQUE' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                : c.statusUltimaOs === 'EM_MANUTENCAO' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                : c.statusUltimaOs === 'AGUARDANDO_RETIRADA' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                                : c.statusUltimaOs === 'ENTREGUE_E_PAGO' ? 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                                : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                              }`}>
+                                  {c.statusUltimaOs === 'AGUARDANDO_PECA_ESTOQUE_ZERADO' ? 'ESTOQUE ZERADO' : c.statusUltimaOs.replace(/_/g, ' ')}
+                              </span>
+                          ) : (
+                              <span className="text-xs px-2 py-1 rounded border border-white/10 outline-none font-bold bg-slate-500/20 text-slate-300">
+                                  Sem OS
+                              </span>
+                          )}
                         </div>
                         <Link href={`/os/${c.id}`} target="_blank" className="text-xs flex items-center gap-1 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 rounded">
                             <Printer size={12} />

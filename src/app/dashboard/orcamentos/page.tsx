@@ -660,7 +660,7 @@ export default function OrcamentosPage() {
                       <option value="" disabled>-- Buscar Peça no Estoque --</option>
                       {pecas.filter(p => p.quantidadeEstoque > 0).map(p => (
                         <option key={p.id} value={p.id}>
-                          {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
+                          {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.marca || p.modelo ? `(${p.marca ? p.marca + ' ' : ''}${p.modelo || ''})` : ''} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
                         </option>
                       ))}
                     </select>

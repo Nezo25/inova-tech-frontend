@@ -529,7 +529,7 @@ export default function OrcamentosPage() {
                 </tr>
               </thead>
               <tbody>
-                {pecas.filter(p => p.quantidadeEstoque > 0).map((p: any) => (
+                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').map((p: any) => (
                   <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
                     <td className="px-4 py-3 font-bold text-slate-300">#{p.id}</td>
                     <td className="px-4 py-3">
@@ -544,7 +544,7 @@ export default function OrcamentosPage() {
                     <td className="px-4 py-3 text-emerald-400">R$ {p.precoVenda?.toFixed(2)}</td>
                   </tr>
                 ))}
-                {pecas.filter(p => p.quantidadeEstoque > 0).length === 0 && (
+                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       Nenhuma peça com estoque disponível no momento.
@@ -679,10 +679,20 @@ export default function OrcamentosPage() {
                 {(() => {
                   const clienteSelecionado = clientes.find(c => c.id.toString() === selectedClienteId);
                   if (clienteSelecionado && clienteSelecionado.modeloProduto) {
-                    const termoBusca = clienteSelecionado.modeloProduto.toLowerCase();
-                    const pecasDoModelo = pecas.filter(p => 
-                      p.nome.toLowerCase().includes(termoBusca) || 
-                      (p.modelo && p.modelo.toLowerCase().includes(termoBusca))
+                    const normalizarTexto = (texto: string) => {
+                      return (texto || '')
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                        .replace(/[^a-z0-9]/g, "");     // Remove espaços e caracteres especiais
+                    };
+                    
+                    const termoBusca = normalizarTexto(clienteSelecionado.modeloProduto);
+                    const pecasParaManutencao = pecas.filter((p: any) => p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID');
+                    
+                    const pecasDoModelo = pecasParaManutencao.filter((p: any) => 
+                      normalizarTexto(p.nome).includes(termoBusca) || 
+                      normalizarTexto(p.modelo).includes(termoBusca)
                     );
                     const temEstoque = pecasDoModelo.some(p => p.quantidadeEstoque > 0);
 
@@ -791,7 +801,7 @@ export default function OrcamentosPage() {
                       className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 outline-none cursor-pointer"
                     >
                       <option value="" disabled>-- Buscar Peça no Estoque --</option>
-                      {pecas.filter(p => p.quantidadeEstoque > 0).map(p => (
+                      {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').map(p => (
                         <option key={p.id} value={p.id}>
                           {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.marca || p.modelo ? `(${p.marca ? p.marca + ' ' : ''}${p.modelo || ''})` : ''} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
                         </option>

@@ -7,6 +7,24 @@ import { Plus, Edit, Trash2, Box, X, AlertTriangle, Camera } from "lucide-react"
 import toast, { Toaster } from "react-hot-toast";
 import { compressImage } from "@/utils/imageUtils";
 
+export interface Peca {
+  id: number;
+  nome: string;
+  sku: string;
+  marca: string;
+  modelo: string;
+  categoria: string;
+  quantidadeEstoque: number;
+  quantidadePendente: number;
+  precoVenda: number;
+  custo: number;
+  ativo: boolean;
+  exibirNaVitrine?: boolean;
+  fotoBase64?: string;
+  cor?: string;
+  estoqueMinimo?: number;
+}
+
 function EstoqueDashboardContent() {
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get("tipo") || "PECA";
@@ -14,9 +32,13 @@ function EstoqueDashboardContent() {
   const titulo = isAparelho ? "Aparelhos / Smartphones" : tipoParam === "ACESSORIO" ? "Acessórios" : "Peças de Reposição";
   const botaoTexto = isAparelho ? "Aparelho" : tipoParam === "ACESSORIO" ? "Acessório" : "Peça";
 
-  const [pecas, setPecas] = useState<any[]>([]);
+  const [pecas, setPecas] = useState<Peca[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  const [modalEntradaAberta, setModalEntradaAberta] = useState(false);
+  const [pecaSelecionada, setPecaSelecionada] = useState<Peca | null>(null);
+  const [qtdEntrada, setQtdEntrada] = useState<number>(1);
   
   const [formData, setFormData] = useState({
     id: null as number | null,
@@ -54,6 +76,58 @@ function EstoqueDashboardContent() {
   useEffect(() => {
     fetchPecas();
   }, [tipoParam]); // Re-fetch on query change if needed
+
+  // Efeito para disparar o Parse Preview ao digitar o Nome
+  useEffect(() => {
+    if (!formData.nome || formData.nome.trim().length < 4) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/parse-preview`, {
+          method: 'POST',
+          body: JSON.stringify({ texto: formData.nome })
+        });
+        const data = await res.json();
+
+        // Só auto-preenche se o usuário ainda não tiver selecionado/digitado manualmente
+        setFormData(prev => ({
+          ...prev,
+          categoria: prev.categoria || data.categoriaSugerida,
+          marca: prev.marca || data.marcaSugerida,
+          modelo: prev.modelo || data.modeloExtraido
+        }));
+      } catch (err) {
+        console.error("Erro no parser preview:", err);
+      }
+    }, 400); // Debounce de 400ms
+
+    return () => clearTimeout(timer);
+  }, [formData.nome]);
+
+  const abriModalEntrada = (peca: Peca) => {
+    setPecaSelecionada(peca);
+    setQtdEntrada(1);
+    setModalEntradaAberta(true);
+  };
+
+  const handleSalvarEntrada = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pecaSelecionada) return;
+
+    const loadingToast = toast.loading("Registrando entrada...");
+    try {
+      const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/${pecaSelecionada.id}/entrada`, {
+        method: "POST",
+        body: JSON.stringify({ quantidade: qtdEntrada })
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Entrada registrada com sucesso!", { id: loadingToast });
+      setModalEntradaAberta(false);
+      fetchPecas();
+    } catch (err) {
+      toast.error("Erro ao registrar entrada", { id: loadingToast });
+    }
+  };
 
   const fetchPecas = () => {
     apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas`)
@@ -230,11 +304,17 @@ function EstoqueDashboardContent() {
                       <div className={`text-xs ${isEstoqueBaixo ? 'text-yellow-500/70' : 'text-slate-500'}`}>{p.modelo}</div>
                   </td>
                   <td className={`p-4 ${isEstoqueBaixo ? 'text-yellow-500' : 'text-slate-300'}`}>{p.cor || '-'}</td>
-                  <td className="p-4">
-                      <div className={`flex items-center gap-2 font-bold ${isEstoqueBaixo ? 'text-yellow-400' : 'text-emerald-500'}`}>
-                          {isEstoqueBaixo && <AlertTriangle size={16} />}
-                          {p.quantidadeEstoque}
-                      </div>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex flex-col">
+                      <span className={`font-bold ${isEstoqueBaixo ? 'text-yellow-400' : 'text-emerald-500'}`}>
+                        {p.quantidadeEstoque} un.
+                      </span>
+                      {p.quantidadePendente > 0 && (
+                        <span className="text-[11px] text-amber-400 font-semibold flex items-center gap-1 mt-0.5">
+                          ⚠️ Faltam {p.quantidadePendente} un.
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className={`p-4 ${isEstoqueBaixo ? 'text-yellow-500' : 'text-slate-400'}`}>
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.custo)}
@@ -259,11 +339,17 @@ function EstoqueDashboardContent() {
                           })()}
                       </td>
                   )}
-                  <td className="p-4 text-right">
+                  <td className="p-4 text-right flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => abriModalEntrada(p)}
+                      className="px-2.5 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                    >
+                      📥 Entrada
+                    </button>
                     <button onClick={() => openEditModal(p)} className="text-slate-400 hover:text-yellow-500 p-2 transition-colors">
                       <Edit size={18} />
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="text-slate-400 hover:text-red-500 p-2 transition-colors ml-2">
+                    <button onClick={() => handleDelete(p.id)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
                       <Trash2 size={18} />
                     </button>
                   </td>
@@ -455,6 +541,54 @@ function EstoqueDashboardContent() {
                     <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button>
                     <button type="submit" className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold px-6 py-2 rounded transition-colors">Salvar</button>
                 </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Entrada de Estoque */}
+      {modalEntradaAberta && pecaSelecionada && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">📥 Registrar Entrada de Peça</h3>
+            <p className="text-sm text-slate-400 mb-4">
+              Item: <strong className="text-indigo-400">{pecaSelecionada.nome}</strong>
+            </p>
+
+            {pecaSelecionada.quantidadePendente > 0 && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4 text-xs text-amber-300">
+                ⚠️ <strong>Atenção:</strong> Existem <strong>{pecaSelecionada.quantidadePendente} unidades pendentes</strong> de orçamentos. A entrada abaterá automaticamente a pendência antes de somar ao estoque físico.
+              </div>
+            )}
+
+            <form onSubmit={handleSalvarEntrada}>
+              <label className="block text-xs font-medium text-slate-400 mb-1">
+                Quantidade Comprada / Recebida
+              </label>
+              <input
+                type="number"
+                min="1"
+                required
+                value={qtdEntrada}
+                onChange={(e) => setQtdEntrada(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-medium focus:outline-none focus:border-indigo-500 mb-6"
+              />
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModalEntradaAberta(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-sm transition-colors"
+                >
+                  Confirmar Entrada
+                </button>
+              </div>
             </form>
           </div>
         </div>

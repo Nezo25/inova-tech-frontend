@@ -142,7 +142,9 @@ function EstoqueDashboardContent() {
           estoqueMinimo: "3", 
           categoria: isAparelho ? "IPHONE" : tipoParam,
           ativo: true,
-          isMarcaOutra: false
+          isMarcaOutra: false,
+          fotoUrl: "",
+          exibirNaVitrine: true
       });
       setIsEditing(false);
       setShowModal(true);

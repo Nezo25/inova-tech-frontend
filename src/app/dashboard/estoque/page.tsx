@@ -23,6 +23,7 @@ export interface Peca {
   fotoBase64?: string;
   cor?: string;
   estoqueMinimo?: number;
+  margemLucroPorcentagem?: string;
 }
 
 function EstoqueDashboardContent() {

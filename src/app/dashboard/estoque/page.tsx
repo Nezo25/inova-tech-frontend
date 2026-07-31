@@ -483,7 +483,8 @@ function EstoqueDashboardContent() {
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Estoque Inicial</label>
-                        <input type="number" required value={formData.quantidadeEstoque} onChange={e => setFormData({...formData, quantidadeEstoque: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                        <input type="number" required disabled={isEditing} value={formData.quantidadeEstoque} onChange={e => setFormData({...formData, quantidadeEstoque: e.target.value})} className={`w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white outline-none ${isEditing ? 'opacity-50 cursor-not-allowed' : 'focus:border-yellow-500'}`} title={isEditing ? "Para alterar o estoque, feche esta tela e use o botão '📥 Entrada' na tabela." : ""} />
+                        {isEditing && <span className="text-[10px] text-yellow-500/80">Use o botão "📥 Entrada" na tabela para adicionar estoque.</span>}
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Alerta de Mínimo</label>
@@ -552,7 +553,13 @@ function EstoqueDashboardContent() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2">📥 Registrar Entrada de Peça</h3>
             <p className="text-sm text-slate-400 mb-4">
-              Item: <strong className="text-indigo-400">{pecaSelecionada.nome}</strong>
+              Item: <strong className="text-indigo-400">
+                {[
+                  pecaSelecionada.nome,
+                  pecaSelecionada.marca && pecaSelecionada.marca !== 'OUTRAS' && !pecaSelecionada.nome.toLowerCase().includes(pecaSelecionada.marca.toLowerCase()) ? pecaSelecionada.marca : '',
+                  pecaSelecionada.modelo && !pecaSelecionada.nome.toLowerCase().includes(pecaSelecionada.modelo.toLowerCase()) ? pecaSelecionada.modelo : ''
+                ].filter(Boolean).join(' ')}
+              </strong>
             </p>
 
             {pecaSelecionada.quantidadePendente > 0 && (

@@ -32,6 +32,15 @@ export default function OrcamentosPage() {
   const [selectedPecaId, setSelectedPecaId] = useState('');
   const [quantidadeItem, setQuantidadeItem] = useState('1');
 
+  // Cadastro Rápido de Peça Zero Estoque
+  const [mostrarCadastroRapido, setMostrarCadastroRapido] = useState(false);
+  const [novaPecaRapida, setNovaPecaRapida] = useState({
+    nome: '',
+    custo: '',
+    precoVenda: '',
+    quantidadePedido: '1'
+  });
+
   useEffect(() => {
     buscarOrcamentos();
     buscarPecas(); // Busca todas as peças sem filtro para o Select do modal
@@ -113,6 +122,58 @@ export default function OrcamentosPage() {
       }
     } catch (error) {
       toast.error('Erro de conexão ao aprovar.', { id: t });
+    }
+  };
+
+  const cadastrarPecaRapida = async (cliente: any) => {
+    if (!novaPecaRapida.nome || !novaPecaRapida.precoVenda) {
+      toast.error('Preencha pelo menos o nome e o preço de venda da peça.');
+      return;
+    }
+    const t = toast.loading("Cadastrando peça sem estoque...");
+    try {
+      const payload = {
+        nome: novaPecaRapida.nome,
+        modelo: cliente.modeloProduto || "",
+        marca: cliente.marcaAparelho || "",
+        cor: "",
+        sku: "",
+        custo: parseFloat(novaPecaRapida.custo.replace(',', '.')) || 0,
+        precoVenda: parseFloat(novaPecaRapida.precoVenda.replace(',', '.')) || 0,
+        quantidadeEstoque: 0, 
+        estoqueMinimo: 3,
+        categoria: "PECA",
+        ativo: true
+      };
+      
+      const res = await fetch(`${getApiUrl()}/api/pecas`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        const pecaCriada = await res.json();
+        
+        // Add to cart directly
+        const qtd = parseInt(novaPecaRapida.quantidadePedido) || 1;
+        setItensCarrinho(prev => [...prev, {
+          pecaId: pecaCriada.id,
+          nome: pecaCriada.nome,
+          quantidade: qtd,
+          precoUnitario: pecaCriada.precoVenda,
+          subtotal: (pecaCriada.precoVenda * qtd)
+        }]);
+        
+        toast.success("Peça cadastrada e adicionada ao orçamento!", { id: t });
+        setMostrarCadastroRapido(false);
+        setNovaPecaRapida({ nome: '', custo: '', precoVenda: '', quantidadePedido: '1' });
+        buscarPecas(); // reload pieces
+      } else {
+        toast.error("Erro ao cadastrar peça.", { id: t });
+      }
+    } catch(error) {
+      toast.error("Erro de conexão", { id: t });
     }
   };
 
@@ -628,17 +689,82 @@ export default function OrcamentosPage() {
                             ✅ Temos peças (telas/componentes) compatíveis em estoque! Busque abaixo.
                           </p>
                         ) : (
-                          <p className="text-red-400 font-medium flex items-center gap-2 flex-wrap">
-                            ❌ Sem peças em estoque para este modelo.
-                            <a 
-                              href={`https://lista.mercadolivre.com.br/tela-${clienteSelecionado.modeloProduto.replace(/\\s+/g, '-')}`}
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="text-blue-400 hover:text-blue-300 underline underline-offset-2 flex items-center gap-1"
-                            >
-                              Buscar no fornecedor
-                            </a>
-                          </p>
+                          <div className="flex flex-col gap-3">
+                            <p className="text-red-400 font-medium flex items-center gap-2 flex-wrap">
+                              ❌ Sem peças em estoque para este modelo.
+                              <a 
+                                href={`https://lista.mercadolivre.com.br/tela-${clienteSelecionado.modeloProduto.replace(/\\s+/g, '-')}`}
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-blue-400 hover:text-blue-300 underline underline-offset-2 flex items-center gap-1"
+                              >
+                                Buscar no fornecedor
+                              </a>
+                            </p>
+                            
+                            {!mostrarCadastroRapido ? (
+                              <button 
+                                type="button"
+                                onClick={() => setMostrarCadastroRapido(true)}
+                                className="text-sm bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border border-yellow-500/30 px-3 py-1.5 rounded-lg w-fit transition-colors"
+                              >
+                                + Cadastrar peça zerada pro pedido
+                              </button>
+                            ) : (
+                              <div className="bg-black/40 p-3 rounded-lg border border-yellow-500/30 flex flex-col gap-2 mt-2">
+                                <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-wider mb-1">Cadastro Rápido (Sem Estoque)</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  <input 
+                                    type="text" 
+                                    placeholder="Nome da peça (ex: Tela Original)"
+                                    value={novaPecaRapida.nome}
+                                    onChange={e => setNovaPecaRapida({...novaPecaRapida, nome: e.target.value})}
+                                    className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none"
+                                  />
+                                  <div className="flex gap-2">
+                                    <input 
+                                      type="text" 
+                                      placeholder="Custo (R$)"
+                                      value={novaPecaRapida.custo}
+                                      onChange={e => setNovaPecaRapida({...novaPecaRapida, custo: e.target.value})}
+                                      className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none w-1/3"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      placeholder="Venda (R$)"
+                                      value={novaPecaRapida.precoVenda}
+                                      onChange={e => setNovaPecaRapida({...novaPecaRapida, precoVenda: e.target.value})}
+                                      className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none w-1/3"
+                                    />
+                                    <input 
+                                      type="number" 
+                                      min="1"
+                                      placeholder="Qtd"
+                                      value={novaPecaRapida.quantidadePedido}
+                                      onChange={e => setNovaPecaRapida({...novaPecaRapida, quantidadePedido: e.target.value})}
+                                      className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none w-1/3"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex justify-end gap-2 mt-1">
+                                  <button 
+                                    type="button"
+                                    onClick={() => setMostrarCadastroRapido(false)}
+                                    className="text-xs text-slate-400 hover:text-white px-2 py-1"
+                                  >
+                                    Cancelar
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    onClick={() => cadastrarPecaRapida(clienteSelecionado)}
+                                    className="text-xs bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-3 py-1 rounded transition-colors"
+                                  >
+                                    Salvar e Adicionar
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     );

@@ -51,3 +51,15 @@
 .bg-gradient-accent {
   @apply bg-gradient-to-r from-yellow-600 to-yellow-500;
 }
+
+@media print {
+  .termo-garantia {
+    font-size: 10px;
+    line-height: 1.2;
+    margin-top: 20px;
+    border-top: 1px dashed #333;
+    padding-top: 10px;
+    page-break-inside: avoid;
+  }
+}
+

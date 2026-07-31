@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { parseCookies } from 'nookies';
-import { Plus, X, Trash2, CheckCircle } from 'lucide-react';
+import { Plus, X, Trash2, CheckCircle, PenTool } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { SignatureModal } from '@/components/ui/SignatureModal';
 
 export default function OrcamentosPage() {
   const [pecas, setPecas] = useState<any[]>([]);
@@ -21,6 +22,10 @@ export default function OrcamentosPage() {
   // States para Novo Orçamento (Modal)
   const [showModal, setShowModal] = useState(false);
   const [selectedClienteId, setSelectedClienteId] = useState('');
+
+  // States para Assinatura Digital
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [orcamentoParaAssinar, setOrcamentoParaAssinar] = useState<number | null>(null);
   
   // Itens do carrinho
   const [itensCarrinho, setItensCarrinho] = useState<any[]>([]);
@@ -111,6 +116,146 @@ export default function OrcamentosPage() {
     }
   };
 
+  const cancelarOrcamento = async (id: number) => {
+    if (!confirm("Tem certeza que deseja cancelar/estornar este orçamento? As peças voltarão ao estoque e o financeiro será estornado.")) return;
+    
+    const t = toast.loading("Cancelando...");
+    try {
+      const res = await fetch(`${getApiUrl()}/api/orcamentos/${id}/cancelar`, {
+        method: 'POST',
+        headers: getHeaders()
+      });
+
+      if (res.ok) {
+        toast.success("Orçamento cancelado com sucesso!", { id: t });
+        buscarOrcamentos();
+        buscarPecas();
+      } else {
+        toast.error("Erro ao cancelar orçamento.", { id: t });
+      }
+    } catch (error) {
+      toast.error("Erro de conexão.", { id: t });
+    }
+  };
+
+  const imprimirComprovante = async (orcamento: any) => {
+    const t = toast.loading("Gerando comprovante...");
+    let config = {
+      nomeFantasia: 'InovaTech Assistência',
+      cnpj: '00.000.000/0000-00',
+      endereco: 'Rua Principal, 1000',
+      telefone: '(00) 0000-0000',
+      termoGarantia: 'Garantia padrão de 90 dias para defeitos de fabricação ou serviços prestados.'
+    };
+
+    try {
+      const res = await fetch(`${getApiUrl()}/api/configuracoes-loja`, { headers: getHeaders() });
+      if (res.ok) {
+        config = await res.json();
+      }
+    } catch (e) {
+      console.warn("Erro ao buscar configs da loja, usando padrão.");
+    }
+    toast.dismiss(t);
+
+    const dataStr = new Date(orcamento.dataCriacao).toLocaleDateString();
+    let itensHtml = orcamento.itens.map((i: any) => {
+      const skuStr = i.peca?.sku ? `<br><small style="color: #666;">SKU: ${i.peca.sku}</small>` : '';
+      return `<tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${i.quantidade}x</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${i.peca?.nome} ${skuStr}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">R$ ${i.precoUnitarioAplicado?.toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+
+    const assinaturaHtml = orcamento.assinaturaBase64 
+      ? `<div style="text-align: center; margin-top: 20px;">
+           <img src="${orcamento.assinaturaBase64}" style="max-height: 100px; display: block; margin: 0 auto;" />
+           <div style="width: 200px; border-top: 1px solid #333; margin: 5px auto 0;">Assinatura do Cliente</div>
+         </div>`
+      : `<div style="text-align: center; margin-top: 60px;">
+           <div style="width: 200px; border-top: 1px solid #333; margin: 0 auto;">Assinatura do Cliente</div>
+         </div>`;
+
+    const html = `
+      <html>
+        <head>
+          <title>Comprovante - Orçamento #${orcamento.id}</title>
+          <style>
+            @media print {
+              @page { margin: 0.5cm; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; color: #333; max-width: 800px; margin: 0 auto; }
+            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+            .header h1 { margin: 0 0 5px 0; font-size: 24px; }
+            .header p { margin: 2px 0; font-size: 14px; color: #555; }
+            .info-box { display: flex; justify-content: space-between; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; }
+            .info-col p { margin: 5px 0; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th { background: #f2f2f2; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+            th:last-child { text-align: right; }
+            .total-row { font-size: 1.2em; font-weight: bold; text-align: right; margin-top: 10px; padding-top: 10px; border-top: 2px solid #333; }
+            .status { font-weight: bold; padding: 3px 8px; border-radius: 4px; color: #fff; background: ${orcamento.status === 'CANCELADO' ? '#ef4444' : orcamento.status === 'APROVADO' ? '#10b981' : '#f59e0b'}; }
+            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; text-align: justify; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${config.nomeFantasia}</h1>
+            <p>CNPJ: ${config.cnpj} | Tel: ${config.telefone}</p>
+            <p>${config.endereco}</p>
+          </div>
+          
+          <div class="info-box">
+            <div class="info-col">
+              <p><strong>Comprovante de Orçamento / Serviço</strong></p>
+              <p><strong>Cliente:</strong> ${orcamento.cliente?.nomeCliente || 'Desconhecido'}</p>
+            </div>
+            <div class="info-col" style="text-align: right;">
+              <p><strong>Orçamento:</strong> #${orcamento.id.toString().padStart(4, '0')}</p>
+              <p><strong>Data:</strong> ${dataStr}</p>
+              <p><strong>Status:</strong> <span class="status">${orcamento.status}</span></p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Qtd</th>
+                <th>Peça / Serviço</th>
+                <th>Valor Unit.</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itensHtml}
+            </tbody>
+          </table>
+          <div class="total-row">
+            Total Geral: R$ ${orcamento.valorTotal?.toFixed(2)}
+          </div>
+          
+          <div class="footer termo-garantia">
+            <strong>Termo de Garantia:</strong><br><br>
+            ${config.termoGarantia.replace(/\\n/g, '<br>')}
+            <br><br>
+            <p style="text-align: center; margin-top: 30px; font-weight: bold;">Obrigado pela preferência!</p>
+            ${assinaturaHtml}
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
+  };
+
   // Funções do Modal de Criação
   const adicionarItem = () => {
     if (!selectedPecaId) {
@@ -184,6 +329,51 @@ export default function OrcamentosPage() {
         buscarOrcamentos();
       } else {
         toast.error("Erro ao salvar orçamento.", { id: t });
+      }
+    } catch (error) {
+      toast.error("Erro de conexão.", { id: t });
+    }
+  };
+
+  const deletarOrcamento = async (id: number) => {
+    if (!confirm("Tem certeza que deseja excluir este orçamento permanentemente?")) return;
+    
+    const t = toast.loading("Excluindo...");
+    try {
+      const res = await fetch(`${getApiUrl()}/api/orcamentos/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
+
+      if (res.ok) {
+        toast.success("Orçamento excluído com sucesso!", { id: t });
+        buscarOrcamentos();
+      } else {
+        toast.error("Erro ao excluir orçamento.", { id: t });
+      }
+    } catch (error) {
+      toast.error("Erro de conexão.", { id: t });
+    }
+  };
+
+  const salvarAssinatura = async (base64: string) => {
+    if (!orcamentoParaAssinar) return;
+
+    const t = toast.loading("Salvando assinatura...");
+    try {
+      const res = await fetch(`${getApiUrl()}/api/orcamentos/${orcamentoParaAssinar}/assinar`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ assinaturaBase64: base64 })
+      });
+
+      if (res.ok) {
+        toast.success("Assinatura salva com sucesso!", { id: t });
+        setShowSignatureModal(false);
+        setOrcamentoParaAssinar(null);
+        buscarOrcamentos();
+      } else {
+        toast.error("Erro ao salvar assinatura.", { id: t });
       }
     } catch (error) {
       toast.error("Erro de conexão.", { id: t });
@@ -278,11 +468,11 @@ export default function OrcamentosPage() {
                 </tr>
               </thead>
               <tbody>
-                {pecas.map((p: any) => (
+                {pecas.filter(p => p.quantidadeEstoque > 0).map((p: any) => (
                   <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
                     <td className="px-4 py-3 font-bold text-slate-300">#{p.id}</td>
                     <td className="px-4 py-3">
-                      <div>{p.nome}</div>
+                      <div>{p.nome} {p.sku && <span className="text-[10px] ml-2 bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{p.sku}</span>}</div>
                       <div className="text-[10px] text-slate-500">{p.marca} {p.modelo}</div>
                     </td>
                     <td className="px-4 py-3">
@@ -293,10 +483,10 @@ export default function OrcamentosPage() {
                     <td className="px-4 py-3 text-emerald-400">R$ {p.precoVenda?.toFixed(2)}</td>
                   </tr>
                 ))}
-                {pecas.length === 0 && (
+                {pecas.filter(p => p.quantidadeEstoque > 0).length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                      Nenhuma peça no momento.
+                      Nenhuma peça com estoque disponível no momento.
                     </td>
                   </tr>
                 )}
@@ -326,7 +516,8 @@ export default function OrcamentosPage() {
                 <th className="px-6 py-4">Data</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Itens</th>
-                <th className="px-6 py-4 rounded-tr-xl">Total</th>
+                <th className="px-6 py-4">Total</th>
+                <th className="px-6 py-4 rounded-tr-xl text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
@@ -338,6 +529,7 @@ export default function OrcamentosPage() {
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                       o.status === 'APROVADO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      : o.status === 'CANCELADO' ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                       : o.status === 'ENTREGUE' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                       : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'}`}>
                       {o.status}
@@ -346,16 +538,39 @@ export default function OrcamentosPage() {
                   <td className="px-6 py-4 text-slate-400">
                     {o.itens?.map((i: any) => (
                       <div key={i.id} className="text-xs mb-1">
-                        <span className="text-white">{i.quantidade}x</span> {i.peca?.nome} <span className="text-slate-500">(R$ {i.precoUnitarioAplicado?.toFixed(2)})</span>
+                        <span className="text-white">{i.quantidade}x</span> {i.peca?.nome} {i.peca?.sku && <span className="text-[10px] bg-slate-800 text-slate-400 px-1 rounded mx-1">{i.peca.sku}</span>} <span className="text-slate-500">(R$ {i.precoUnitarioAplicado?.toFixed(2)})</span>
                       </div>
                     ))}
                   </td>
                   <td className="px-6 py-4 font-bold text-emerald-400">R$ {o.valorTotal?.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <button 
+                      onClick={() => {
+                        setOrcamentoParaAssinar(o.id);
+                        setShowSignatureModal(true);
+                      }} 
+                      className="text-slate-500 hover:text-indigo-400 transition-colors p-2 text-xs font-bold" 
+                      title="Assinar"
+                    >
+                      ✍️ Assinar
+                    </button>
+                    <button onClick={() => imprimirComprovante(o)} className="text-slate-500 hover:text-blue-400 transition-colors p-2 text-xs font-bold" title="Imprimir Comprovante">
+                      🖨️ PDF
+                    </button>
+                    {o.status !== 'CANCELADO' && (
+                      <button onClick={() => cancelarOrcamento(o.id)} className="text-slate-500 hover:text-yellow-500 transition-colors p-2 text-xs font-bold" title="Cancelar / Estornar">
+                        🚫 Cancelar
+                      </button>
+                    )}
+                    <button onClick={() => deletarOrcamento(o.id)} className="text-slate-500 hover:text-red-500 transition-colors p-2" title="Excluir Definitivamente">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
                 </tr>
               ))}
               {orcamentos.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                     Nenhum orçamento encontrado. Comece clicando em "Novo Orçamento".
                   </td>
                 </tr>
@@ -391,6 +606,45 @@ export default function OrcamentosPage() {
                     <option key={c.id} value={c.id}>{c.nomeCliente} (Cel: {c.numeroCelular})</option>
                   ))}
                 </select>
+
+                {/* Info do Aparelho do Cliente */}
+                {(() => {
+                  const clienteSelecionado = clientes.find(c => c.id.toString() === selectedClienteId);
+                  if (clienteSelecionado && clienteSelecionado.modeloProduto) {
+                    const termoBusca = clienteSelecionado.modeloProduto.toLowerCase();
+                    const pecasDoModelo = pecas.filter(p => 
+                      p.nome.toLowerCase().includes(termoBusca) || 
+                      (p.modelo && p.modelo.toLowerCase().includes(termoBusca))
+                    );
+                    const temEstoque = pecasDoModelo.some(p => p.quantidadeEstoque > 0);
+
+                    return (
+                      <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-white/10 text-sm">
+                        <p className="text-slate-300 mb-2">
+                          📱 Cliente possui um <strong>{clienteSelecionado.marcaAparelho} {clienteSelecionado.modeloProduto}</strong>.
+                        </p>
+                        {temEstoque ? (
+                          <p className="text-emerald-400 font-medium">
+                            ✅ Temos peças (telas/componentes) compatíveis em estoque! Busque abaixo.
+                          </p>
+                        ) : (
+                          <p className="text-red-400 font-medium flex items-center gap-2 flex-wrap">
+                            ❌ Sem peças em estoque para este modelo.
+                            <a 
+                              href={`https://lista.mercadolivre.com.br/tela-${clienteSelecionado.modeloProduto.replace(/\\s+/g, '-')}`}
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="text-blue-400 hover:text-blue-300 underline underline-offset-2 flex items-center gap-1"
+                            >
+                              Buscar no fornecedor
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Inserção de Peças */}
@@ -404,9 +658,9 @@ export default function OrcamentosPage() {
                       className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 outline-none cursor-pointer"
                     >
                       <option value="" disabled>-- Buscar Peça no Estoque --</option>
-                      {pecas.map(p => (
+                      {pecas.filter(p => p.quantidadeEstoque > 0).map(p => (
                         <option key={p.id} value={p.id}>
-                          {p.nome} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
+                          {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
                         </option>
                       ))}
                     </select>
@@ -497,6 +751,15 @@ export default function OrcamentosPage() {
         </div>
       )}
 
+      {/* MODAL DE ASSINATURA */}
+      <SignatureModal
+        isOpen={showSignatureModal}
+        onClose={() => {
+          setShowSignatureModal(false);
+          setOrcamentoParaAssinar(null);
+        }}
+        onSave={salvarAssinatura}
+      />
     </div>
   );
 }

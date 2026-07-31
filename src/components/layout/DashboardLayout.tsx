@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { parseCookies, destroyCookie } from "nookies";
-import { LayoutDashboard, Users, ArrowRightLeft, LogOut, Store, Package, Smartphone, Headphones, Wrench } from "lucide-react";
+import { LayoutDashboard, Users, ArrowRightLeft, LogOut, Store, Package, Smartphone, Headphones, Wrench, Settings } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -134,6 +134,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Link href="/dashboard/vitrine" className={navItemClass('/dashboard/vitrine')}>
             <Store size={20} className={iconClass('/dashboard/vitrine')} />
             <span className="md:inline">Vitrine</span>
+          </Link>
+          
+          <Link href="/dashboard/configuracoes" className={navItemClass('/dashboard/configuracoes')}>
+            <Settings size={20} className={iconClass('/dashboard/configuracoes')} />
+            <span className="md:inline">Configurações</span>
           </Link>
           
           {/* Botão Sair no Mobile (Apenas Ícone) */}

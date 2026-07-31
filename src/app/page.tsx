@@ -269,10 +269,6 @@ export default function Home() {
         </div>
         <div className="container mx-auto px-6 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-slate-600 text-sm">
           <span>&copy; {new Date().getFullYear()} Inova Tech Celulares. Todos os direitos reservados.</span>
-          <Link href="/login" className="mt-4 md:mt-0 hover:text-yellow-500 transition-colors flex items-center gap-2">
-             <ShieldCheck size={14} />
-             Acesso ao Painel
-          </Link>
         </div>
       </footer>
     </div>

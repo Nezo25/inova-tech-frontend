@@ -23,6 +23,7 @@ function EstoqueDashboardContent() {
     modelo: "",
     marca: isIphone ? "Apple" : "",
     cor: "",
+    sku: "",
     custo: "",
     precoVenda: "",
     quantidadeEstoque: "",
@@ -79,7 +80,8 @@ function EstoqueDashboardContent() {
         precoVenda: parseFloat(formData.precoVenda.toString().replace(',', '.')),
         quantidadeEstoque: parseInt(formData.quantidadeEstoque.toString()),
         estoqueMinimo: parseInt(formData.estoqueMinimo.toString()),
-        categoria: formData.categoria
+        categoria: formData.categoria,
+        sku: formData.sku
     };
 
     apiFetch(url, {
@@ -119,6 +121,7 @@ function EstoqueDashboardContent() {
           modelo: "", 
           marca: isIphone ? "Apple" : "", 
           cor: "", 
+          sku: "",
           custo: "", 
           precoVenda: "", 
           quantidadeEstoque: "", 
@@ -137,6 +140,7 @@ function EstoqueDashboardContent() {
           modelo: p.modelo || "",
           marca: p.marca || "",
           cor: p.cor || "",
+          sku: p.sku || "",
           custo: p.custo.toString(),
           precoVenda: p.precoVenda.toString(),
           quantidadeEstoque: p.quantidadeEstoque.toString(),
@@ -182,7 +186,10 @@ function EstoqueDashboardContent() {
                 return (
                 <tr key={p.id} className={`border-b border-white/5 transition-colors ${isEstoqueBaixo ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' : 'hover:bg-white/[0.02]'}`}>
                   <td className={`p-4 font-medium ${isEstoqueBaixo ? 'text-yellow-500' : 'text-white'}`}>
-                      <div>{p.nome}</div>
+                      <div className="flex items-center gap-2">
+                        {p.nome}
+                        {p.sku && <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-white/10">{p.sku}</span>}
+                      </div>
                       <div className={`text-xs ${isEstoqueBaixo ? 'text-yellow-500/70' : 'text-slate-500'}`}>{p.modelo}</div>
                   </td>
                   <td className={`p-4 ${isEstoqueBaixo ? 'text-yellow-500' : 'text-slate-300'}`}>{p.cor || '-'}</td>
@@ -254,6 +261,10 @@ function EstoqueDashboardContent() {
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Cor</label>
                         <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">SKU / Código</label>
+                        <input type="text" placeholder="Ex: XTR-9120" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Preço de Custo (R$)</label>

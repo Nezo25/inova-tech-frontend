@@ -131,17 +131,17 @@ export default function FinanceiroPage() {
   };
 
   const darBaixa = async (id: number) => {
-    const t = toast.loading("Baixando transação...");
+    const t = toast.loading("Depositando transação...");
     try {
       const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/transacoes/${id}/baixa`, {
         method: 'PATCH'
       });
 
       if (res.ok) {
-        toast.success("Baixa realizada com sucesso!", { id: t });
+        toast.success("Depósito realizado com sucesso!", { id: t });
         fetchResumo();
       } else {
-        toast.error("Erro ao dar baixa.", { id: t });
+        toast.error("Erro ao depositar.", { id: t });
       }
     } catch (error) {
       toast.error("Erro de conexão.", { id: t });
@@ -307,7 +307,7 @@ export default function FinanceiroPage() {
                       )}
                       {t.statusPagamento === 'PENDENTE' && (
                         <button onClick={() => darBaixa(t.id)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-3 py-1 rounded text-xs font-medium transition-colors">
-                          Baixar
+                          Depositar
                         </button>
                       )}
                       <button onClick={() => deletarTransacao(t.id)} className="text-slate-500 hover:text-red-500 transition-colors p-1">

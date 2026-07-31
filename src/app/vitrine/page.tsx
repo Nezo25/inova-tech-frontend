@@ -58,9 +58,9 @@ export default function VitrinePublicaPage() {
                 {aparelhos.map(aparelho => (
                     <div key={aparelho.id} className="bg-slate-900/40 border border-white/10 rounded-2xl overflow-hidden hover:border-yellow-500/30 transition-all hover:shadow-[0_0_20px_rgba(234,179,8,0.1)] group flex flex-col">
                         <div className="relative aspect-[4/5] w-full bg-black/40 overflow-hidden">
-                            {aparelho.fotoUrl ? (
+                            {aparelho.fotoBase64 ? (
                                 <img 
-                                    src={aparelho.fotoUrl} 
+                                    src={aparelho.fotoBase64} 
                                     alt={aparelho.nome}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />

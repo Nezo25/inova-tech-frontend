@@ -3,8 +3,9 @@
 import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from '@/utils/api';
-import { Plus, Edit, Trash2, Box, X, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Trash2, Box, X, AlertTriangle, Camera } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { compressImage } from "@/utils/imageUtils";
 
 function EstoqueDashboardContent() {
   const searchParams = useSearchParams();
@@ -31,9 +32,24 @@ function EstoqueDashboardContent() {
     categoria: tipoParam,
     ativo: true,
     isMarcaOutra: false,
-    fotoUrl: "",
+    fotoBase64: "",
     exibirNaVitrine: true
   });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const compressed = await compressImage(e.target.files[0]);
+        setFormData({ ...formData, fotoBase64: compressed });
+        toast.success("Foto anexada!");
+      } catch (err) {
+        console.error("Erro ao comprimir imagem:", err);
+        toast.error("Erro ao processar imagem.");
+      }
+    }
+  };
 
   useEffect(() => {
     fetchPecas();
@@ -143,7 +159,7 @@ function EstoqueDashboardContent() {
           categoria: isAparelho ? "IPHONE" : tipoParam,
           ativo: true,
           isMarcaOutra: false,
-          fotoUrl: "",
+          fotoBase64: "",
           exibirNaVitrine: true
       });
       setIsEditing(false);
@@ -165,7 +181,7 @@ function EstoqueDashboardContent() {
           categoria: p.categoria || "PECA",
           ativo: p.ativo,
           isMarcaOutra: p.marca ? !["Apple", "Samsung", "Xiaomi", "Motorola", "Realme", "LG"].includes(p.marca) : false,
-          fotoUrl: p.fotoUrl || "",
+          fotoBase64: p.fotoBase64 || "",
           exibirNaVitrine: p.exibirNaVitrine !== undefined ? p.exibirNaVitrine : true
       });
       setIsEditing(true);
@@ -238,7 +254,7 @@ function EstoqueDashboardContent() {
                           {(() => {
                               if (!p.exibirNaVitrine) return <span className="px-2 py-1 rounded text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">Oculto</span>;
                               if (p.quantidadeEstoque <= 0) return <span className="px-2 py-1 rounded text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30">Sem Estoque</span>;
-                              if (!p.precoVenda || p.precoVenda <= 0 || !p.fotoUrl) return <span className="px-2 py-1 rounded text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/30" title={!p.fotoUrl ? "Falta foto" : "Falta preço"}>Incompleto</span>;
+                              if (!p.precoVenda || p.precoVenda <= 0 || !p.fotoBase64) return <span className="px-2 py-1 rounded text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/30" title={!p.fotoBase64 ? "Falta foto" : "Falta preço"}>Incompleto</span>;
                               return <span className="px-2 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Na Vitrine</span>;
                           })()}
                       </td>
@@ -402,14 +418,34 @@ function EstoqueDashboardContent() {
                                 <p className="text-xs text-slate-500 mt-1">Aparelhos sem foto ou sem preço de venda não serão exibidos na loja online, mesmo se marcados.</p>
                             </div>
                             <div className="col-span-1 md:col-span-2">
-                                <label className="block text-sm text-slate-400 mb-1">URL da Foto (Vitrine)</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Ex: https://img.com/foto.jpg" 
-                                    value={formData.fotoUrl || ""} 
-                                    onChange={e => setFormData({...formData, fotoUrl: e.target.value})} 
-                                    className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" 
+                                <label className="block text-sm text-slate-400 mb-1">Foto do Aparelho (Vitrine)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    onChange={handleFotoUpload}
                                 />
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-colors overflow-hidden relative ${formData.fotoBase64 ? 'border-yellow-500' : 'border-white/10 hover:border-yellow-500 bg-slate-950'}`}
+                                >
+                                    {formData.fotoBase64 ? (
+                                        <img src={formData.fotoBase64} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-center text-slate-500">
+                                            <Camera size={24} className="mx-auto mb-2 opacity-50" />
+                                            <span className="text-sm">Clique para Tirar ou Anexar Foto</span>
+                                        </div>
+                                    )}
+                                </div>
+                                {formData.fotoBase64 && (
+                                    <div className="flex justify-end mt-2">
+                                        <button type="button" onClick={() => setFormData({...formData, fotoBase64: ""})} className="text-xs text-red-400 hover:text-red-300">
+                                            Remover Foto
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

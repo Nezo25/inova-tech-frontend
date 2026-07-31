@@ -20,7 +20,8 @@ export default function VitrineDashboardPage() {
     cor: "",
     categoria: "IPHONE",
     marca: "Apple",
-    ativo: true
+    ativo: true,
+    isMarcaOutra: false
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +65,7 @@ export default function VitrineDashboardPage() {
     // Convert string to number for price
     const payload = {
         ...formData,
+        marca: formData.marca ? formData.marca.trim() : "",
         preco: parseFloat(formData.preco.toString().replace(',', '.'))
     };
 
@@ -107,7 +109,7 @@ export default function VitrineDashboardPage() {
   };
 
   const openNewModal = () => {
-      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", categoria: "IPHONE", marca: "Apple", ativo: true });
+      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", categoria: "IPHONE", marca: "Apple", ativo: true, isMarcaOutra: false });
       setIsEditing(false);
       setShowModal(true);
   };
@@ -122,7 +124,8 @@ export default function VitrineDashboardPage() {
           cor: produto.cor || "",
           categoria: produto.categoria || "IPHONE",
           marca: produto.marca || "Apple",
-          ativo: produto.ativo
+          ativo: produto.ativo,
+          isMarcaOutra: produto.marca ? !["Apple", "Samsung", "Xiaomi", "Motorola", "Realme", "LG"].includes(produto.marca) : false
       });
       setIsEditing(true);
       setShowModal(true);
@@ -254,7 +257,8 @@ export default function VitrineDashboardPage() {
                                 setFormData({
                                     ...formData, 
                                     categoria: newCat,
-                                    marca: newCat === 'IPHONE' ? 'Apple' : (formData.marca === 'Apple' ? '' : formData.marca)
+                                    marca: newCat === 'IPHONE' ? 'Apple' : (formData.marca === 'Apple' ? '' : formData.marca),
+                                    isMarcaOutra: newCat === 'IPHONE' ? false : formData.isMarcaOutra
                                 });
                             }} 
                             className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none"
@@ -267,7 +271,36 @@ export default function VitrineDashboardPage() {
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Marca</label>
-                        <input type="text" value={formData.marca} onChange={e => setFormData({...formData, marca: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                        <select 
+                            value={formData.isMarcaOutra ? "Outra" : formData.marca}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === "Outra") {
+                                    setFormData({...formData, marca: "", isMarcaOutra: true});
+                                } else {
+                                    setFormData({...formData, marca: val, isMarcaOutra: false});
+                                }
+                            }}
+                            className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none"
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="Apple">Apple</option>
+                            <option value="Samsung">Samsung</option>
+                            <option value="Xiaomi">Xiaomi</option>
+                            <option value="Motorola">Motorola</option>
+                            <option value="Realme">Realme</option>
+                            <option value="LG">LG</option>
+                            <option value="Outra">Outra</option>
+                        </select>
+                        {formData.isMarcaOutra && (
+                            <input 
+                                type="text" 
+                                placeholder="Digite a marca..."
+                                value={formData.marca} 
+                                onChange={e => setFormData({...formData, marca: e.target.value})} 
+                                className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none mt-2" 
+                            />
+                        )}
                     </div>
                 </div>
 

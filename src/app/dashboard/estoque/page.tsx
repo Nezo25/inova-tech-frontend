@@ -85,6 +85,7 @@ function EstoqueDashboardContent() {
       try {
         const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/parse-preview`, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texto: formData.nome })
         });
         const data = await res.json();
@@ -118,6 +119,7 @@ function EstoqueDashboardContent() {
     try {
       const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/pecas/${pecaSelecionada.id}/entrada`, {
         method: "POST",
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantidade: qtdEntrada })
       });
       if (!res.ok) throw new Error();

@@ -18,6 +18,8 @@ export default function VitrineDashboardPage() {
     descricao: "",
     imagemBase64: "",
     cor: "",
+    categoria: "IPHONE",
+    marca: "Apple",
     ativo: true
   });
 
@@ -105,7 +107,7 @@ export default function VitrineDashboardPage() {
   };
 
   const openNewModal = () => {
-      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", ativo: true });
+      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", categoria: "IPHONE", marca: "Apple", ativo: true });
       setIsEditing(false);
       setShowModal(true);
   };
@@ -118,6 +120,8 @@ export default function VitrineDashboardPage() {
           descricao: produto.descricao,
           imagemBase64: produto.imagemBase64,
           cor: produto.cor || "",
+          categoria: produto.categoria || "IPHONE",
+          marca: produto.marca || "Apple",
           ativo: produto.ativo
       });
       setIsEditing(true);
@@ -238,6 +242,33 @@ export default function VitrineDashboardPage() {
                 <div>
                     <label className="block text-sm text-slate-400 mb-1">Cor</label>
                     <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Categoria</label>
+                        <select 
+                            value={formData.categoria} 
+                            onChange={e => {
+                                const newCat = e.target.value;
+                                setFormData({
+                                    ...formData, 
+                                    categoria: newCat,
+                                    marca: newCat === 'IPHONE' ? 'Apple' : (formData.marca === 'Apple' ? '' : formData.marca)
+                                });
+                            }} 
+                            className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none"
+                        >
+                            <option value="IPHONE">iPhone</option>
+                            <option value="ANDROID">Android</option>
+                            <option value="ACESSORIO">Acessório</option>
+                            <option value="OUTROS">Outros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Marca</label>
+                        <input type="text" value={formData.marca} onChange={e => setFormData({...formData, marca: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
+                    </div>
                 </div>
 
                 <div>

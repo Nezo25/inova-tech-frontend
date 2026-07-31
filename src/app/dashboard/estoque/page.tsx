@@ -9,9 +9,9 @@ import toast, { Toaster } from "react-hot-toast";
 function EstoqueDashboardContent() {
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get("tipo") || "PECA";
-  const isIphone = tipoParam === "APARELHO";
-  const titulo = isIphone ? "Aparelhos / iPhones" : tipoParam === "ACESSORIO" ? "Acessórios" : "Peças de Reposição";
-  const botaoTexto = isIphone ? "Aparelho" : tipoParam === "ACESSORIO" ? "Acessório" : "Peça";
+  const isAparelho = tipoParam === "APARELHO";
+  const titulo = isAparelho ? "Aparelhos / Smartphones" : tipoParam === "ACESSORIO" ? "Acessórios" : "Peças de Reposição";
+  const botaoTexto = isAparelho ? "Aparelho" : tipoParam === "ACESSORIO" ? "Acessório" : "Peça";
 
   const [pecas, setPecas] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -21,7 +21,7 @@ function EstoqueDashboardContent() {
     id: null as number | null,
     nome: "",
     modelo: "",
-    marca: isIphone ? "Apple" : "",
+    marca: isAparelho ? "Apple" : "",
     cor: "",
     sku: "",
     custo: "",
@@ -43,6 +43,9 @@ function EstoqueDashboardContent() {
           // Filtragem baseada no campo 'categoria' retornado pela API
           const filtradas = data.filter((p: any) => {
               const cat = p.categoria || 'PECA'; // default para itens antigos
+              if (tipoParam === 'APARELHO') {
+                  return cat === 'IPHONE' || cat === 'ANDROID';
+              }
               return cat === tipoParam;
           });
           setPecas(filtradas);
@@ -119,14 +122,14 @@ function EstoqueDashboardContent() {
           id: null, 
           nome: "", 
           modelo: "", 
-          marca: isIphone ? "Apple" : "", 
+          marca: isAparelho ? "Apple" : "", 
           cor: "", 
           sku: "",
           custo: "", 
           precoVenda: "", 
           quantidadeEstoque: "", 
           estoqueMinimo: "3", 
-          categoria: tipoParam,
+          categoria: isAparelho ? "IPHONE" : tipoParam,
           ativo: true 
       });
       setIsEditing(false);
@@ -252,12 +255,30 @@ function EstoqueDashboardContent() {
                         <label className="block text-sm text-slate-400 mb-1">Modelo</label>
                         <input type="text" value={formData.modelo} onChange={e => setFormData({...formData, modelo: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                     </div>
-                    {!isIphone && (
+                    {isAparelho && (
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Categoria (Sistema)</label>
+                        <select 
+                            value={formData.categoria} 
+                            onChange={e => {
+                                const newCat = e.target.value;
+                                setFormData({
+                                    ...formData, 
+                                    categoria: newCat,
+                                    marca: newCat === 'IPHONE' ? 'Apple' : (formData.marca === 'Apple' ? '' : formData.marca)
+                                });
+                            }} 
+                            className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none"
+                        >
+                            <option value="IPHONE">iPhone</option>
+                            <option value="ANDROID">Android</option>
+                        </select>
+                    </div>
+                    )}
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Marca</label>
                         <input type="text" value={formData.marca} onChange={e => setFormData({...formData, marca: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />
                     </div>
-                    )}
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Cor</label>
                         <input type="text" placeholder="Ex: Preto, Branco" value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})} className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none" />

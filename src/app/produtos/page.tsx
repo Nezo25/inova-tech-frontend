@@ -36,6 +36,53 @@ export default function VitrinePublicaPage() {
     window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
   };
 
+  const renderProductCard = (produto: any) => (
+    <div key={produto.id} className="bg-slate-900/50 rounded-2xl border border-white/10 overflow-hidden flex flex-col group hover:border-yellow-500/50 transition-all hover:shadow-[0_0_30px_rgba(234,179,8,0.1)]">
+      <div className="h-64 w-full bg-slate-800 flex items-center justify-center overflow-hidden relative">
+        {produto.imagemBase64 ? (
+          <img src={produto.imagemBase64} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <PackageOpen size={48} className="text-slate-600" />
+        )}
+        {produto.marca && (
+            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">
+                {produto.marca}
+            </div>
+        )}
+      </div>
+      <div className="p-6 flex flex-col flex-1">
+        <h3 className="text-xl font-bold text-white mb-2 font-outfit">
+          {produto.nome}
+          {produto.cor && (
+              <span className="ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-slate-300 border border-white/10 align-middle">
+                  {produto.cor}
+              </span>
+          )}
+        </h3>
+        <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-3">
+          {produto.descricao}
+        </p>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-2xl font-bold text-yellow-500">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.preco)}
+          </span>
+        </div>
+        <button 
+          onClick={() => handleWhatsAppClick(produto)}
+          className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] flex items-center justify-center gap-2"
+        >
+          <MessageCircle size={20} />
+          Comprar no WhatsApp
+        </button>
+      </div>
+    </div>
+  );
+
+  const iphones = produtos.filter(p => p.categoria === 'IPHONE');
+  const androids = produtos.filter(p => p.categoria === 'ANDROID');
+  const acessorios = produtos.filter(p => p.categoria === 'ACESSORIO');
+  const outros = produtos.filter(p => !['IPHONE', 'ANDROID', 'ACESSORIO'].includes(p.categoria));
+
   return (
     <div className="min-h-screen bg-[#07090f] text-slate-200">
       <header className="py-6 border-b border-white/5 bg-slate-900/30">
@@ -70,43 +117,56 @@ export default function VitrinePublicaPage() {
             <p className="text-slate-400">Nenhum produto disponível no momento. Volte mais tarde!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {produtos.map(produto => (
-              <div key={produto.id} className="bg-slate-900/50 rounded-2xl border border-white/10 overflow-hidden flex flex-col group hover:border-yellow-500/50 transition-all hover:shadow-[0_0_30px_rgba(234,179,8,0.1)]">
-                <div className="h-64 w-full bg-slate-800 flex items-center justify-center overflow-hidden">
-                  {produto.imagemBase64 ? (
-                    <img src={produto.imagemBase64} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <PackageOpen size={48} className="text-slate-600" />
-                  )}
+          <div className="space-y-20">
+            
+            {iphones.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-3xl font-bold font-outfit text-white">🍏 iPhones</h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2 font-outfit">
-                    {produto.nome}
-                    {produto.cor && (
-                        <span className="ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-slate-300 border border-white/10 align-middle">
-                            {produto.cor}
-                        </span>
-                    )}
-                  </h3>
-                  <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-3">
-                    {produto.descricao}
-                  </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-2xl font-bold text-yellow-500">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.preco)}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => handleWhatsAppClick(produto)}
-                    className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle size={20} />
-                    Comprar no WhatsApp
-                  </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {iphones.map(renderProductCard)}
                 </div>
-              </div>
-            ))}
+              </section>
+            )}
+
+            {androids.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-3xl font-bold font-outfit text-white">🤖 Androids</h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {androids.map(renderProductCard)}
+                </div>
+              </section>
+            )}
+
+            {acessorios.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-3xl font-bold font-outfit text-white">🎧 Acessórios</h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {acessorios.map(renderProductCard)}
+                </div>
+              </section>
+            )}
+
+            {outros.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-3xl font-bold font-outfit text-white">✨ Mais Produtos</h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {outros.map(renderProductCard)}
+                </div>
+              </section>
+            )}
+
           </div>
         )}
       </main>

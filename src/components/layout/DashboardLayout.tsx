@@ -116,9 +116,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <span className="md:inline">Orçamentos</span>
           </Link>
           
-          <Link href="/dashboard/estoque?tipo=IPHONE" className={navItemClass('/dashboard/estoque?tipo=IPHONE')}>
-            <Smartphone size={20} className={iconClass('/dashboard/estoque?tipo=IPHONE')} />
-            <span className="md:inline">iPhones</span>
+          <Link href="/dashboard/estoque?tipo=APARELHO" className={navItemClass('/dashboard/estoque?tipo=APARELHO')}>
+            <Smartphone size={20} className={iconClass('/dashboard/estoque?tipo=APARELHO')} />
+            <span className="md:inline">Aparelhos</span>
           </Link>
 
           <Link href="/dashboard/estoque?tipo=ACESSORIO" className={navItemClass('/dashboard/estoque?tipo=ACESSORIO')}>

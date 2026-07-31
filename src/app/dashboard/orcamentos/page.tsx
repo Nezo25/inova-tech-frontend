@@ -582,7 +582,14 @@ export default function OrcamentosPage() {
               </tr>
             </thead>
             <tbody>
-              {orcamentos.map((o: any) => (
+              {[...orcamentos].sort((a: any, b: any) => {
+                const aEntregue = a.status === 'ENTREGUE_E_PAGO';
+                const bEntregue = b.status === 'ENTREGUE_E_PAGO';
+                if (aEntregue !== bEntregue) return aEntregue ? 1 : -1;
+                const dataA = new Date(a.dataCriacao || a.createdAt || 0).getTime();
+                const dataB = new Date(b.dataCriacao || b.createdAt || 0).getTime();
+                return dataB - dataA;
+              }).map((o: any) => (
                 <tr key={o.id} className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-6 py-4 font-bold text-slate-300">#{o.id}</td>
                   <td className="px-6 py-4 text-white font-medium">{o.cliente?.nomeCliente || 'Desconhecido'}</td>

@@ -344,7 +344,14 @@ export default function ClientesPage() {
              </button>
           </div>
         ) : (
-          clientes.map((c: any) => (
+          [...clientes].sort((a: any, b: any) => {
+            const aEntregue = a.status === 'ENTREGUE_E_PAGO';
+            const bEntregue = b.status === 'ENTREGUE_E_PAGO';
+            if (aEntregue !== bEntregue) return aEntregue ? 1 : -1;
+            const dataA = new Date(a.dataCadastro || a.createdAt || 0).getTime();
+            const dataB = new Date(b.dataCadastro || b.createdAt || 0).getTime();
+            return dataB - dataA;
+          }).map((c: any) => (
             <div 
               key={c.id} 
               onClick={() => openDetailsModal(c.id)}
@@ -358,7 +365,16 @@ export default function ClientesPage() {
                         </div>
                         <div className="min-w-0">
                         <h3 className="text-lg font-bold text-white truncate" title={c.nomeCliente}>{c.nomeCliente}</h3>
-                        <p className="text-xs text-slate-400">Desde {new Date(c.dataCadastro).toLocaleDateString('pt-BR')}</p>
+                        <div className="text-[11px] text-slate-400 font-medium mt-1">
+                          <span>Entrada: </span>
+                          <span className="text-slate-200">
+                            {new Date(c.dataCadastro).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>

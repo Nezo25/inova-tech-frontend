@@ -30,7 +30,9 @@ function EstoqueDashboardContent() {
     estoqueMinimo: "3",
     categoria: tipoParam,
     ativo: true,
-    isMarcaOutra: false
+    isMarcaOutra: false,
+    fotoUrl: "",
+    exibirNaVitrine: true
   });
 
   useEffect(() => {

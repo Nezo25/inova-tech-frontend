@@ -281,7 +281,8 @@ export default function VitrineDashboardPage() {
                                     setFormData({...formData, marca: val, isMarcaOutra: false});
                                 }
                             }}
-                            className="w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none"
+                            disabled={formData.categoria === 'IPHONE'}
+                            className={`w-full bg-slate-950 border border-white/10 rounded px-3 py-2 text-white outline-none ${formData.categoria === 'IPHONE' ? 'opacity-50 cursor-not-allowed' : 'focus:border-yellow-500'}`}
                         >
                             <option value="">Selecione...</option>
                             <option value="Apple">Apple</option>

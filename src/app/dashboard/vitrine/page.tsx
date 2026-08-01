@@ -33,7 +33,15 @@ export default function VitrineDashboardPage() {
   const fetchProdutos = () => {
     apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/vitrine/admin`)
       .then(res => res.json())
-      .then(data => setProdutos(data))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setProdutos(data);
+        } else {
+          console.error("API returned non-array data:", data);
+          setProdutos([]);
+          toast.error("Erro no formato dos dados da vitrine");
+        }
+      })
       .catch(err => {
         console.error(err);
         toast.error("Erro ao carregar vitrine");

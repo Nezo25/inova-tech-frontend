@@ -21,6 +21,7 @@ export default function VitrineDashboardPage() {
     categoria: "IPHONE",
     marca: "Apple",
     ativo: true,
+    exibirNaVitrine: true,
     isMarcaOutra: false
   });
 
@@ -95,7 +96,7 @@ export default function VitrineDashboardPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+    if (!confirm("Tem certeza que deseja excluir este produto da vitrine?")) return;
     
     const loadingToast = toast.loading("Excluindo...");
     apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/vitrine/${id}`, { method: "DELETE" })
@@ -108,7 +109,7 @@ export default function VitrineDashboardPage() {
   };
 
   const toggleStatus = (produto: any) => {
-    const payload = { ...produto, ativo: !produto.ativo };
+    const payload = { ...produto, exibirNaVitrine: !produto.exibirNaVitrine };
     apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/vitrine/${produto.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -117,7 +118,7 @@ export default function VitrineDashboardPage() {
   };
 
   const openNewModal = () => {
-      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", categoria: "IPHONE", marca: "Apple", ativo: true, isMarcaOutra: false });
+      setFormData({ id: null, nome: "", preco: "", descricao: "", imagemBase64: "", cor: "", categoria: "IPHONE", marca: "Apple", ativo: true, exibirNaVitrine: true, isMarcaOutra: false });
       setIsEditing(false);
       setShowModal(true);
   };
@@ -133,6 +134,7 @@ export default function VitrineDashboardPage() {
           categoria: produto.categoria || "IPHONE",
           marca: produto.marca || "Apple",
           ativo: produto.ativo,
+          exibirNaVitrine: produto.exibirNaVitrine !== undefined ? produto.exibirNaVitrine : true,
           isMarcaOutra: produto.marca ? !["Apple", "Samsung", "Xiaomi", "Motorola", "Realme", "LG"].includes(produto.marca) : false
       });
       setIsEditing(true);
@@ -182,13 +184,13 @@ export default function VitrineDashboardPage() {
                   </td>
                   <td className="p-4">
                       <button onClick={() => toggleStatus(p)} className="flex items-center gap-2 focus:outline-none">
-                          {p.ativo ? (
+                          {p.exibirNaVitrine ? (
                               <ToggleRight size={32} className="text-green-500" />
                           ) : (
                               <ToggleLeft size={32} className="text-slate-500" />
                           )}
-                          <span className={`text-sm font-medium ${p.ativo ? 'text-green-500' : 'text-slate-500'}`}>
-                              {p.ativo ? 'Ativo' : 'Oculto'}
+                          <span className={`text-sm font-medium ${p.exibirNaVitrine ? 'text-green-500' : 'text-slate-500'}`}>
+                              {p.exibirNaVitrine ? 'Ativo' : 'Oculto'}
                           </span>
                       </button>
                   </td>
@@ -273,8 +275,8 @@ export default function VitrineDashboardPage() {
                         >
                             <option value="IPHONE">iPhone</option>
                             <option value="ANDROID">Android</option>
+                            <option value="PECA">Peça</option>
                             <option value="ACESSORIO">Acessório</option>
-                            <option value="OUTROS">Outros</option>
                         </select>
                     </div>
                     <div>

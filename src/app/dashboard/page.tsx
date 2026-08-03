@@ -125,7 +125,7 @@ export default function DashboardPage() {
                       <div>
                           <p className="text-slate-400 text-sm font-medium">Ticket Médio (OS)</p>
                           <h3 className="text-2xl font-bold text-white mt-1">
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.ticketMedio || 0)}
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.ticketMedioOS || 0)}
                           </h3>
                       </div>
                       <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                       <div>
                           <p className="text-slate-400 text-sm font-medium">Taxa de Conversão</p>
                           <h3 className="text-2xl font-bold text-white mt-1">
-                              {(metricas.taxaConversao || 0).toFixed(1)}%
+                              {(metricas.taxaConversaoOrcamentos || 0).toFixed(1)}%
                           </h3>
                       </div>
                       <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                       <div>
                           <p className="text-slate-400 text-sm font-medium">Estoque Parado</p>
                           <h3 className="text-2xl font-bold text-white mt-1">
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.estoqueParado || 0)}
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.valorEstoqueParado || 0)}
                           </h3>
                       </div>
                       <div className="p-2.5 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
@@ -170,8 +170,7 @@ export default function DashboardPage() {
                       <div>
                           <p className="text-indigo-200 text-sm font-medium">Lucro Líquido Estimado</p>
                           <h3 className="text-2xl font-bold text-white mt-1">
-                              {/* TODO: Connect with real lucro data */}
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.lucroMes || 0)}
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas.lucroLiquidoMes || 0)}
                           </h3>
                       </div>
                       <div className="p-2.5 bg-white/10 rounded-xl border border-white/20">
@@ -188,9 +187,9 @@ export default function DashboardPage() {
             <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
                 <h3 className="text-lg font-bold text-white mb-6">Evolução Financeira</h3>
                 <div className="h-72 w-full">
-                    {metricas.graficoEvolucao?.length > 0 ? (
+                    {metricas.evolucaoFinanceira?.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={metricas.graficoEvolucao} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <AreaChart data={metricas.evolucaoFinanceira} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -203,7 +202,6 @@ export default function DashboardPage() {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                                 <XAxis dataKey="data" stroke="#64748b" tick={{fill: '#64748b'}} tickFormatter={(v) => {
-                                    // format "YYYY-MM-DD" to "DD/MM"
                                     if(!v) return "";
                                     const parts = v.split('-');
                                     return parts.length === 3 ? `${parts[2]}/${parts[1]}` : v;
@@ -227,11 +225,11 @@ export default function DashboardPage() {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
                 <h3 className="text-lg font-bold text-white mb-6">Despesas por Categoria</h3>
                 <div className="h-72 w-full">
-                    {metricas.graficoDespesas?.length > 0 ? (
+                    {metricas.despesasPorCategoria?.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={metricas.graficoDespesas}
+                                    data={metricas.despesasPorCategoria}
                                     dataKey="valor"
                                     nameKey="categoria"
                                     cx="50%"
@@ -240,7 +238,7 @@ export default function DashboardPage() {
                                     outerRadius={90}
                                     paddingAngle={5}
                                 >
-                                    {metricas.graficoDespesas.map((entry: any, index: number) => (
+                                    {metricas.despesasPorCategoria.map((entry: any, index: number) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>

@@ -679,9 +679,11 @@ export default function OrcamentosPage() {
                   onChange={(e) => setSelectedClienteId(e.target.value)}
                   className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-yellow-500 outline-none cursor-pointer"
                 >
-                  <option value="" disabled>-- Escolha um cliente --</option>
-                  {clientes.map(c => (
-                    <option key={c.id} value={c.id}>{c.nomeCliente} (Cel: {c.numeroCelular})</option>
+                  <option value="" disabled>-- Escolha um cliente / OS --</option>
+                  {clientes
+                    .filter(c => !orcamentos.some(o => o.cliente?.id === c.id))
+                    .map(c => (
+                    <option key={c.id} value={c.id}>OS #{c.id} - {c.nomeCliente} ({c.marcaAparelho} {c.modeloProduto})</option>
                   ))}
                 </select>
 

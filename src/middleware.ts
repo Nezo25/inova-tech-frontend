@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   }
   
   // A rota '/' agora é pública (Landing Page)
-
+  // Fix: cache buster for vercel edge middleware redirect loop
   return NextResponse.next();
 }
 

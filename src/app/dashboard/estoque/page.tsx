@@ -3,9 +3,10 @@
 import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from '@/utils/api';
-import { Plus, Edit, Trash2, Box, X, AlertTriangle, Camera } from "lucide-react";
+import { Plus, Edit, Trash2, Box, X, AlertTriangle, Camera, PackageOpen } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { compressImage } from "@/utils/imageUtils";
+import { CompraLoteModal } from "./CompraLoteModal";
 
 export interface Peca {
   id: number;
@@ -38,6 +39,7 @@ function EstoqueDashboardContent() {
   const [isEditing, setIsEditing] = useState(false);
   
   const [modalEntradaAberta, setModalEntradaAberta] = useState(false);
+  const [modalLoteAberto, setModalLoteAberto] = useState(false);
   const [pecaSelecionada, setPecaSelecionada] = useState<Peca | null>(null);
   const [qtdEntrada, setQtdEntrada] = useState<number>(1);
   
@@ -273,9 +275,14 @@ function EstoqueDashboardContent() {
           <h1 className="text-3xl font-bold font-outfit text-white">Estoque: {titulo}</h1>
           <p className="text-slate-400">Gerencie o inventário de {titulo.toLowerCase()}.</p>
         </div>
-        <button onClick={openNewModal} className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors">
-          <Plus size={20} /> Novo(a) {botaoTexto}
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setModalLoteAberto(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-lg shadow-indigo-600/20">
+            <PackageOpen size={20} /> Lançar Compra em Lote
+          </button>
+          <button onClick={openNewModal} className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-lg shadow-yellow-500/20">
+            <Plus size={20} /> Novo(a) {botaoTexto}
+          </button>
+        </div>
       </div>
 
       <div className="bg-[#07090f] border border-white/5 rounded-xl overflow-hidden shadow-xl">
@@ -603,6 +610,13 @@ function EstoqueDashboardContent() {
           </div>
         </div>
       )}
+
+      {/* Modal Compra em Lote */}
+      <CompraLoteModal 
+        isOpen={modalLoteAberto} 
+        onClose={() => setModalLoteAberto(false)} 
+        onSuccess={fetchPecas} 
+      />
     </div>
   );
 }

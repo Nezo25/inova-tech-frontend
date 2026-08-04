@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from '@/utils/api';
 import { 
   TrendingUp, TrendingDown, DollarSign, Plus, X, Calendar, 
-  Activity, ArrowUpRight, ArrowDownRight, PackageMinus, Target,
-  Clock, AlertTriangle, Smartphone, Wrench, AlertCircle, ShoppingCart, List, CheckCircle
+  Activity, ArrowUpRight, ArrowDownRight, PackageOpen, 
+  Clock, AlertTriangle, Smartphone, Wrench, AlertCircle, ShoppingCart, List, CheckCircle, ChevronDown
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { 
@@ -16,7 +16,14 @@ export default function DashboardPage() {
   const [metricas, setMetricas] = useState<any>(null);
   const [transacoes, setTransacoes] = useState([]);
   const [periodoFiltrado, setPeriodoFiltrado] = useState("mensal");
-  
+  const [visaoAbc, setVisaoAbc] = useState<'peca' | 'categoria' | 'marca'>('categoria');
+
+  const dadosGraficoAbc = React.useMemo(() => {
+    if (visaoAbc === 'categoria') return metricas?.curvaAbcCategoria || [];
+    if (visaoAbc === 'marca') return metricas?.curvaAbcMarca || [];
+    return metricas?.curvaAbc || [];
+  }, [visaoAbc, metricas]);
+
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     descricao: "", valor: "", tipo: "RECEITA"
@@ -236,11 +243,27 @@ export default function DashboardPage() {
               </div>
 
               <div className="md:col-span-8 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                <h3 className="text-md font-bold text-white mb-4 flex items-center gap-2"><List size={16} className="text-indigo-400"/> Curva ABC (Pareto)</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-md font-bold text-white flex items-center gap-2">
+                    <List size={16} className="text-indigo-400"/> Curva ABC (Pareto)
+                  </h3>
+                  <div className="relative">
+                    <select
+                      value={visaoAbc}
+                      onChange={(e) => setVisaoAbc(e.target.value as any)}
+                      className="appearance-none bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    >
+                      <option value="peca">Por Peça (Detalhado)</option>
+                      <option value="categoria">Por Categoria</option>
+                      <option value="marca">Por Marca</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  </div>
+                </div>
                 <div className="h-64 w-full">
-                    {metricas.curvaAbc?.length > 0 ? (
+                    {dadosGraficoAbc?.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={metricas.curvaAbc} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <BarChart data={dadosGraficoAbc} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                                 <XAxis dataKey="nome" stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} />
                                 <YAxis stroke="#64748b" tick={{fill: '#64748b', fontSize: 12}} />
@@ -249,7 +272,7 @@ export default function DashboardPage() {
                                     formatter={(value: any) => formatCurrency(Number(value))}
                                 />
                                 <Bar dataKey="faturamentoTotal" name="Faturamento">
-                                  {metricas.curvaAbc.map((entry:any, index:number) => (
+                                  {dadosGraficoAbc.map((entry:any, index:number) => (
                                     <Cell key={`cell-${index}`} fill={entry.classificacao === 'A' ? '#10b981' : entry.classificacao === 'B' ? '#f59e0b' : '#64748b'} />
                                   ))}
                                 </Bar>

@@ -206,8 +206,7 @@ export default function DashboardPage() {
                                     cy="50%"
                                     innerRadius={60}
                                     outerRadius={90}
-                                    paddingAngle={5}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                                 >
                                     {metricas.topMarcas.map((entry: any, index: number) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

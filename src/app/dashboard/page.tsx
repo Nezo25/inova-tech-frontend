@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from '@/utils/api';
 import { 
   TrendingUp, TrendingDown, DollarSign, Plus, X, Calendar, 
-  Activity, ArrowUpRight, ArrowDownRight, PackageOpen, 
+  Activity, ArrowUpRight, ArrowDownRight, PackageOpen, PackageMinus, Target,
   Clock, AlertTriangle, Smartphone, Wrench, AlertCircle, ShoppingCart, List, CheckCircle, ChevronDown
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";

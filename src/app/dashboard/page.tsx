@@ -314,7 +314,7 @@ export default function DashboardPage() {
                  </div>
                  <div className="flex justify-between p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
                     <span className="text-emerald-400 font-bold">Lucro Líquido Real</span>
-                    <span className="text-emerald-400 font-bold text-xl">{formatCurrency(metricas.lucroMes)}</span>
+                    <span className="text-emerald-400 font-bold text-xl">{formatCurrency(metricas.lucroLiquidoMes)}</span>
                  </div>
               </div>
             </div>

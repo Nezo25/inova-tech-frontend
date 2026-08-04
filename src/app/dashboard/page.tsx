@@ -27,13 +27,13 @@ export default function DashboardPage() {
   }, [periodoFiltrado]);
 
   const fetchDados = () => {
-    apiFetch(${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/dashboard/metricas?periodo=)
+    apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/dashboard/metricas?periodo=${periodoFiltrado}`)
       .then(res => res.json())
       .then(data => setMetricas(data))
       .catch(err => console.error(err));
 
     const dt = new Date();
-    apiFetch(${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/transacoes/resumo?mes=&ano=)
+    apiFetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaggy-chicken-read.loca.lt"}/api/transacoes/resumo?mes=${dt.getMonth() + 1}&ano=${dt.getFullYear()}`)
       .then(res => res.json())
       .then(data => setTransacoes(data.transacoes || []))
       .catch(err => console.error(err));
@@ -59,13 +59,13 @@ export default function DashboardPage() {
            <div className="flex items-center gap-2 bg-slate-900/50 border border-white/10 rounded-lg p-1 text-white">
               <button 
                 onClick={() => setPeriodoFiltrado("mensal")}
-                className={px-4 py-1.5 rounded-md text-sm font-medium transition-colors }
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${periodoFiltrado === 'mensal' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
               >
                   Mensal
               </button>
               <button 
                 onClick={() => setPeriodoFiltrado("anual")}
-                className={px-4 py-1.5 rounded-md text-sm font-medium transition-colors }
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${periodoFiltrado === 'anual' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
               >
                   Anual
               </button>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                                 />
                                 <Bar dataKey="faturamentoTotal" name="Faturamento">
                                   {metricas.curvaAbc.map((entry:any, index:number) => (
-                                    <Cell key={cell-} fill={entry.classificacao === 'A' ? '#10b981' : entry.classificacao === 'B' ? '#f59e0b' : '#64748b'} />
+                                    <Cell key={`cell-${index}`} fill={entry.classificacao === 'A' ? '#10b981' : entry.classificacao === 'B' ? '#f59e0b' : '#64748b'} />
                                   ))}
                                 </Bar>
                             </BarChart>
@@ -207,10 +207,10 @@ export default function DashboardPage() {
                                     innerRadius={60}
                                     outerRadius={90}
                                     paddingAngle={5}
-                                    label={({ name, percent }) => ${name} %}
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                 >
                                     {metricas.topMarcas.map((entry: any, index: number) => (
-                                        <Cell key={cell-} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <Tooltip 
@@ -251,7 +251,7 @@ export default function DashboardPage() {
           {/* Seção CRM: Aparelhos Abandonados */}
           <div className="mt-10 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2"><AlertCircle className="text-orange-400" /> CRM: Aparelhos Abandonados (> 30 dias)</h2>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2"><AlertCircle className="text-orange-400" /> CRM: Aparelhos Abandonados (&gt; 30 dias)</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-300">

@@ -95,13 +95,13 @@ export default function DashboardPage() {
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
                   <div className="flex justify-between items-start">
                       <div>
-                          <p className="text-slate-400 text-sm font-medium">Taxa de Retorno (Garantias)</p>
+                          <p className="text-slate-400 text-sm font-medium">Despesas do Período</p>
                           <h3 className="text-2xl font-bold text-white mt-1">
-                              {metricas.taxaRetorno ? metricas.taxaRetorno.toFixed(1) : "0.0"}%
+                              {formatCurrency(metricas.evolucaoFinanceira?.reduce((acc: number, p: any) => acc + (p.despesa || 0), 0) || 0)}
                           </h3>
                       </div>
                       <div className="p-2.5 bg-red-500/10 rounded-xl border border-red-500/20">
-                          <AlertTriangle className="text-red-400" size={20} />
+                          <TrendingDown className="text-red-400" size={20} />
                       </div>
                   </div>
               </div>
@@ -119,6 +119,80 @@ export default function DashboardPage() {
                   </div>
               </div>
             </div>
+          </div>
+
+          {/* Controle Financeiro (Evolução e Categorias) */}
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><DollarSign className="text-emerald-400"/> Evolução Financeira</h3>
+                  <div className="h-72 w-full">
+                      {metricas.evolucaoFinanceira?.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={metricas.evolucaoFinanceira} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                  <defs>
+                                      <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                      </linearGradient>
+                                      <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                      </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                  <XAxis dataKey="data" stroke="#64748b" tick={{fill: '#64748b'}} tickFormatter={(v) => {
+                                      if(!v) return "";
+                                      const parts = v.split('-');
+                                      return parts.length === 3 ? `${parts[2]}/${parts[1]}` : v;
+                                  }} />
+                                  <YAxis stroke="#64748b" tick={{fill: '#64748b'}} />
+                                  <Tooltip 
+                                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '8px' }}
+                                      itemStyle={{ color: '#e2e8f0' }}
+                                  />
+                                  <Legend />
+                                  <Area type="monotone" name="Receitas" dataKey="receita" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorReceita)" />
+                                  <Area type="monotone" name="Despesas" dataKey="despesa" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorDespesa)" />
+                              </AreaChart>
+                          </ResponsiveContainer>
+                      ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-500">Dados insuficientes para o gráfico</div>
+                      )}
+                  </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><TrendingDown className="text-red-400"/> Despesas por Categoria</h3>
+                  <div className="h-72 w-full">
+                      {metricas.despesasPorCategoria?.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                  <Pie
+                                      data={metricas.despesasPorCategoria}
+                                      dataKey="valor"
+                                      nameKey="categoria"
+                                      cx="50%"
+                                      cy="50%"
+                                      innerRadius={60}
+                                      outerRadius={90}
+                                      paddingAngle={5}
+                                  >
+                                      {metricas.despesasPorCategoria.map((entry: any, index: number) => (
+                                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                      ))}
+                                  </Pie>
+                                  <Tooltip 
+                                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '8px' }}
+                                      formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0)}
+                                  />
+                                  <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                              </PieChart>
+                          </ResponsiveContainer>
+                      ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-500">Dados insuficientes para o gráfico</div>
+                      )}
+                  </div>
+              </div>
           </div>
 
           {/* Seção 2: Saúde do Estoque */}

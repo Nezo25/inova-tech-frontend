@@ -36,6 +36,8 @@ export default function OrcamentosPage() {
   const [mostrarCadastroRapido, setMostrarCadastroRapido] = useState(false);
   const [novaPecaRapida, setNovaPecaRapida] = useState({
     nome: '',
+    marca: '',
+    modelo: '',
     custo: '',
     precoVenda: '',
     quantidadePedido: '1'
@@ -139,8 +141,8 @@ export default function OrcamentosPage() {
     try {
       const payload = {
         nome: novaPecaRapida.nome,
-        modelo: cliente.modeloProduto || "",
-        marca: cliente.marcaAparelho || "",
+        modelo: novaPecaRapida.modelo || cliente.modeloProduto || "",
+        marca: novaPecaRapida.marca || cliente.marcaAparelho || "",
         cor: "",
         sku: "",
         custo: parseFloat(novaPecaRapida.custo.replace(',', '.')) || 0,
@@ -172,7 +174,7 @@ export default function OrcamentosPage() {
         
         toast.success("Peça cadastrada e adicionada ao orçamento!", { id: t });
         setMostrarCadastroRapido(false);
-        setNovaPecaRapida({ nome: '', custo: '', precoVenda: '', quantidadePedido: '1' });
+        setNovaPecaRapida({ nome: '', marca: '', modelo: '', custo: '', precoVenda: '', quantidadePedido: '1' });
         buscarPecas(); // reload pieces
       } else {
         toast.error("Erro ao cadastrar peça.", { id: t });
@@ -734,7 +736,14 @@ export default function OrcamentosPage() {
                             {!mostrarCadastroRapido ? (
                               <button 
                                 type="button"
-                                onClick={() => setMostrarCadastroRapido(true)}
+                                onClick={() => {
+                                  setNovaPecaRapida({
+                                    ...novaPecaRapida, 
+                                    marca: clienteSelecionado.marcaAparelho || '', 
+                                    modelo: clienteSelecionado.modeloProduto || ''
+                                  });
+                                  setMostrarCadastroRapido(true);
+                                }}
                                 className="text-sm bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border border-yellow-500/30 px-3 py-1.5 rounded-lg w-fit transition-colors"
                               >
                                 + Cadastrar peça zerada pro pedido
@@ -750,6 +759,22 @@ export default function OrcamentosPage() {
                                     onChange={e => setNovaPecaRapida({...novaPecaRapida, nome: e.target.value})}
                                     className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none"
                                   />
+                                  <div className="flex gap-2">
+                                    <input 
+                                      type="text" 
+                                      placeholder="Marca"
+                                      value={novaPecaRapida.marca}
+                                      onChange={e => setNovaPecaRapida({...novaPecaRapida, marca: e.target.value})}
+                                      className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none w-1/2"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      placeholder="Modelo"
+                                      value={novaPecaRapida.modelo}
+                                      onChange={e => setNovaPecaRapida({...novaPecaRapida, modelo: e.target.value})}
+                                      className="bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-yellow-500 outline-none w-1/2"
+                                    />
+                                  </div>
                                   <div className="flex gap-2">
                                     <input 
                                       type="text" 

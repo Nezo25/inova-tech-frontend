@@ -17,8 +17,9 @@ export default function VitrineDashboardPage() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          // Filtrar apenas aparelhos e pecas que têm foto e preco para a vitrine
-          setProdutos(data);
+          // Filtrar apenas aparelhos para a vitrine
+          const aparelhos = data.filter((p: any) => p.categoria === 'APARELHO');
+          setProdutos(aparelhos);
         } else {
           setProdutos([]);
           toast.error("Erro no formato dos dados da vitrine");

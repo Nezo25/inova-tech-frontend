@@ -52,7 +52,7 @@ export default function FinanceiroPage() {
       taxaCartao: modalMode === 'PARCELADA' ? formData.taxaCartao : 0,
       isRecorrente: modalMode === 'RECORRENTE',
       dataVencimento: formData.dataVencimento,
-      categoriaDespesa: modalMode === 'RECORRENTE' ? formData.categoriaDespesa : null,
+      categoriaDespesa: formData.tipo === 'DESPESA' ? formData.categoriaDespesa : null,
       quantidadeRecorrencias: modalMode === 'RECORRENTE' ? formData.quantidadeRecorrencias : 12
     };
 
@@ -358,6 +358,21 @@ export default function FinanceiroPage() {
                   </select>
                 </div>
 
+                {formData.tipo === 'DESPESA' && (
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-400 mb-1">Categoria da Despesa</label>
+                    <select required value={formData.categoriaDespesa} onChange={e => setFormData({...formData, categoriaDespesa: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-cyan-400 outline-none transition-colors appearance-none">
+                      <option value="ALUGUEL">Aluguel</option>
+                      <option value="AGUA_LUZ">Água e Luz</option>
+                      <option value="INTERNET">Internet</option>
+                      <option value="SERVIDORES">Servidores</option>
+                      <option value="FORNECEDORES">Fornecedores</option>
+                      <option value="MARKETING">Marketing</option>
+                      <option value="OUTROS">Outros</option>
+                    </select>
+                  </div>
+                )}
+
                 {modalMode === 'UNICA' && (
                   <>
                     <div>
@@ -392,18 +407,6 @@ export default function FinanceiroPage() {
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-sm font-medium text-slate-400 mb-1">Data do Primeiro Vencimento</label>
                       <input required type="date" value={formData.dataVencimento} onChange={e => setFormData({...formData, dataVencimento: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-cyan-400 outline-none transition-colors" />
-                    </div>
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">Categoria da Despesa</label>
-                      <select required value={formData.categoriaDespesa} onChange={e => setFormData({...formData, categoriaDespesa: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-cyan-400 outline-none transition-colors appearance-none">
-                        <option value="ALUGUEL">Aluguel</option>
-                        <option value="AGUA_LUZ">Água e Luz</option>
-                        <option value="INTERNET">Internet</option>
-                        <option value="SERVIDORES">Servidores</option>
-                        <option value="FORNECEDORES">Fornecedores</option>
-                        <option value="MARKETING">Marketing</option>
-                        <option value="OUTROS">Outros</option>
-                      </select>
                     </div>
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-slate-400 mb-1">Projetar por quantos meses?</label>

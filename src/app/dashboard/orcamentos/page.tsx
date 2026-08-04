@@ -137,7 +137,7 @@ export default function OrcamentosPage() {
       toast.error('Preencha pelo menos o nome e o preço de venda da peça.');
       return;
     }
-    const t = toast.loading("Cadastrando peça sem estoque...");
+    const t = toast.loading("Cadastrando peça inicial...");
     try {
       const payload = {
         nome: novaPecaRapida.nome,
@@ -147,7 +147,7 @@ export default function OrcamentosPage() {
         sku: "",
         custo: parseFloat(novaPecaRapida.custo.replace(',', '.')) || 0,
         precoVenda: parseFloat(novaPecaRapida.precoVenda.replace(',', '.')) || 0,
-        quantidadeEstoque: 0, 
+        quantidadeEstoque: parseInt(novaPecaRapida.quantidadePedido) || 1, 
         estoqueMinimo: 3,
         categoria: "PECA",
         ativo: true
@@ -536,7 +536,7 @@ export default function OrcamentosPage() {
                 </tr>
               </thead>
               <tbody>
-                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').map((p: any) => (
+                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'APARELHO').map((p: any) => (
                   <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
                     <td className="px-4 py-3 font-bold text-slate-300">#{p.id}</td>
                     <td className="px-4 py-3">
@@ -551,7 +551,7 @@ export default function OrcamentosPage() {
                     <td className="px-4 py-3 text-emerald-400">R$ {p.precoVenda?.toFixed(2)}</td>
                   </tr>
                 ))}
-                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').length === 0 && (
+                {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'APARELHO').length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       Nenhuma peça com estoque disponível no momento.
@@ -702,7 +702,7 @@ export default function OrcamentosPage() {
                     };
                     
                     const termoBusca = normalizarTexto(clienteSelecionado.modeloProduto);
-                    const pecasParaManutencao = pecas.filter((p: any) => p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID');
+                    const pecasParaManutencao = pecas.filter((p: any) => p.categoria !== 'APARELHO');
                     
                     const pecasDoModelo = pecasParaManutencao.filter((p: any) => 
                       normalizarTexto(p.nome).includes(termoBusca) || 
@@ -750,7 +750,7 @@ export default function OrcamentosPage() {
                               </button>
                             ) : (
                               <div className="bg-black/40 p-3 rounded-lg border border-yellow-500/30 flex flex-col gap-2 mt-2">
-                                <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-wider mb-1">Cadastro Rápido (Sem Estoque)</h4>
+                                <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-wider mb-1">Cadastro Rápido (Lançar Estoque Inicial)</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   <input 
                                     type="text" 
@@ -838,7 +838,7 @@ export default function OrcamentosPage() {
                       className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 outline-none cursor-pointer"
                     >
                       <option value="" disabled>-- Buscar Peça no Estoque --</option>
-                      {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'IPHONE' && p.categoria !== 'ANDROID').map(p => (
+                      {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'APARELHO').map(p => (
                         <option key={p.id} value={p.id}>
                           {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.marca || p.modelo ? `(${p.marca ? p.marca + ' ' : ''}${p.modelo || ''})` : ''} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
                         </option>

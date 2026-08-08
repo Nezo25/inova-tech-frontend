@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
   const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
+  const CORES_PAGAMENTO = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
   return (
     <div className="space-y-8 pb-10">
@@ -82,6 +83,107 @@ export default function DashboardPage() {
 
       {metricas && (
         <>
+          {/* NOVA SEÇÃO: Metas e Crescimento */}
+          <div className="mt-8">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Target className="text-indigo-400" /> Resumo Financeiro & Metas</h2>
+            
+            {/* Termômetro de Meta do Mês */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-slate-300">🎯 Meta de Faturamento do Mês</span>
+                <span className="text-sm font-extrabold text-emerald-400">
+                  R$ {metricas?.faturamentoAtualMes?.toLocaleString('pt-BR')} / R$ {metricas?.metaMensal?.toLocaleString('pt-BR')} ({metricas?.percentualMetaAlcancado?.toFixed(1)}%)
+                </span>
+              </div>
+              {/* Barra de Progresso */}
+              <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(metricas?.percentualMetaAlcancado || 0, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Card Faturamento */}
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-400 text-sm font-medium">Faturamento Atual</p>
+                          <h3 className="text-2xl font-bold text-white mt-1">
+                              {formatCurrency(metricas?.faturamentoAtualMes)}
+                          </h3>
+                          <div className="mt-3">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                              metricas?.variacaoFaturamentoMoM >= 0 
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                            }`}>
+                              {metricas?.variacaoFaturamentoMoM >= 0 ? '▲' : '▼'} {Math.abs(metricas?.variacaoFaturamentoMoM || 0).toFixed(1)}% vs. mês anterior
+                            </span>
+                          </div>
+                      </div>
+                      <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                          <DollarSign className="text-blue-400" size={20} />
+                      </div>
+                  </div>
+              </div>
+
+              {/* Card Lucro Líquido */}
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-400 text-sm font-medium">Lucro Líquido</p>
+                          <h3 className="text-2xl font-bold text-white mt-1">
+                              {formatCurrency(metricas?.lucroLiquidoMes)}
+                          </h3>
+                          <div className="mt-3">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                              metricas?.variacaoLucroMoM >= 0 
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                            }`}>
+                              {metricas?.variacaoLucroMoM >= 0 ? '▲' : '▼'} {Math.abs(metricas?.variacaoLucroMoM || 0).toFixed(1)}% vs. mês anterior
+                            </span>
+                          </div>
+                      </div>
+                      <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                          <TrendingUp className="text-emerald-400" size={20} />
+                      </div>
+                  </div>
+              </div>
+
+              {/* Gráfico de Rosca de Formas de Pagamento */}
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                  <h3 className="text-slate-400 text-sm font-medium mb-4">Formas de Pagamento</h3>
+                  <div className="h-32 w-full flex items-center justify-center">
+                    {metricas?.distribuicaoPagamentos?.length > 0 ? (
+                      <ResponsiveContainer height={140} width="100%">
+                        <PieChart>
+                          <Pie 
+                            cx="50%" cy="50%" 
+                            data={metricas?.distribuicaoPagamentos} 
+                            dataKey="valorTotal" 
+                            innerRadius={30} 
+                            nameKey="formaPagamento" 
+                            outerRadius={50} 
+                            paddingAngle={5}
+                          >
+                            {metricas?.distribuicaoPagamentos.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={CORES_PAGAMENTO[index % CORES_PAGAMENTO.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: any) => `R$ ${Number(value).toFixed(2)}`} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="text-xs text-slate-500">Sem dados de pagamento</div>
+                    )}
+                  </div>
+              </div>
+            </div>
+          </div>
+
           {/* Seção 1: Eficiência Operacional (Bancada) */}
           <div className="mt-8">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Wrench className="text-emerald-400" /> Painel de Eficiência da Bancada</h2>

@@ -872,7 +872,19 @@ export default function OrcamentosPage() {
                           
                           const termoBusca = normalizarTexto(cli.modeloProduto);
                           const isGeral = normalizarTexto(p.modelo || '').includes('geral') || normalizarTexto(p.marca || '').includes('geral');
-                          const isCompatible = normalizarTexto(p.nome).includes(termoBusca) || normalizarTexto(p.modelo || '').includes(termoBusca);
+                          
+                          // Match bi-direcional mais inteligente
+                          const modeloPeca = normalizarTexto(p.modelo || '');
+                          const nomePeca = normalizarTexto(p.nome);
+                          
+                          const isCompatible = 
+                            (modeloPeca && (termoBusca.includes(modeloPeca) || modeloPeca.includes(termoBusca))) ||
+                            (nomePeca && (termoBusca.includes(nomePeca) || nomePeca.includes(termoBusca))) ||
+                            // Fallback caso a pessoa tenha digitado "apple iphone 12" e a peça tenha "iphone 12" no nome
+                            termoBusca.split('').filter(c => c !== ' ').join('').includes(modeloPeca.replace(/ /g, '')) ||
+                            modeloPeca.replace(/ /g, '').includes(termoBusca.replace(/ /g, '')) ||
+                            nomePeca.replace(/ /g, '').includes(termoBusca.replace(/ /g, '')) ||
+                            termoBusca.replace(/ /g, '').includes(nomePeca.replace(/ /g, ''));
                           
                           return isCompatible || isGeral;
                         })

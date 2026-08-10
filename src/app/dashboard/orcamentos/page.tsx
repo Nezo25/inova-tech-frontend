@@ -115,7 +115,13 @@ export default function OrcamentosPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         toast.success('Orçamento aprovado com sucesso! Estoque e financeiro atualizados.', { id: t });
+        
+        if (data.whatsappUrl) {
+          window.open(data.whatsappUrl, '_blank');
+        }
+
         setOrcamentoIdAprovar('');
         buscarOrcamentos();
         buscarPecas();

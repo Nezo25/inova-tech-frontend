@@ -737,6 +737,9 @@ export default function OrcamentosPage() {
                         <p className="text-slate-300 mb-2">
                           📱 Cliente possui um <strong>{clienteSelecionado.marcaAparelho} {clienteSelecionado.modeloProduto}</strong>.
                         </p>
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+                          <span className="font-bold">⚠️ Defeito Relatado:</span> {clienteSelecionado.defeitoRelatado || 'Nenhum defeito especificado.'}
+                        </div>
                         {temEstoque ? (
                           <p className="text-emerald-400 font-medium">
                             ✅ Temos peças (telas/componentes) compatíveis em estoque! Busque abaixo.

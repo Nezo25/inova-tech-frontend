@@ -479,25 +479,25 @@ export default function ClientesPage() {
                        <div>
                            <label className="block text-sm font-medium text-slate-400 mb-1">Nome</label>
                            <input type="text" value={clientDetails.nomeCliente || ""} onChange={e => setClientDetails({...clientDetails, nomeCliente: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                           <div>
-                               <label className="block text-sm font-medium text-slate-400 mb-1">Celular</label>
-                               <input type="text" value={clientDetails.numeroCelular ? formatPhoneMask(clientDetails.numeroCelular) : ""} onChange={e => setClientDetails({...clientDetails, numeroCelular: formatPhoneMask(e.target.value)})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                           <div className="grid grid-cols-2 gap-4 mt-4">
+                               <div>
+                                   <label className="block text-sm font-medium text-slate-400 mb-1">Celular</label>
+                                   <input type="text" value={clientDetails.numeroCelular ? formatPhoneMask(clientDetails.numeroCelular) : ""} onChange={e => setClientDetails({...clientDetails, numeroCelular: formatPhoneMask(e.target.value)})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                               </div>
+                               <div>
+                                   <label className="block text-sm font-medium text-slate-400 mb-1">Endereço</label>
+                                   <input type="text" value={clientDetails.endereco || ""} onChange={e => setClientDetails({...clientDetails, endereco: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                               </div>
                            </div>
-                           <div>
-                               <label className="block text-sm font-medium text-slate-400 mb-1">Marca</label>
-                               <input type="text" value={clientDetails.marcaAparelho || ""} onChange={e => setClientDetails({...clientDetails, marcaAparelho: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
-                           </div>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                           <div>
-                               <label className="block text-sm font-medium text-slate-400 mb-1">Modelo</label>
-                               <input type="text" value={clientDetails.modeloProduto || ""} onChange={e => setClientDetails({...clientDetails, modeloProduto: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
-                           </div>
-                           <div>
-                               <label className="block text-sm font-medium text-slate-400 mb-1">Endereço</label>
-                               <input type="text" value={clientDetails.endereco || ""} onChange={e => setClientDetails({...clientDetails, endereco: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                           <div className="grid grid-cols-2 gap-4 mt-4">
+                               <div>
+                                   <label className="block text-sm font-medium text-slate-400 mb-1">Marca</label>
+                                   <input type="text" value={clientDetails.marcaAparelho || ""} onChange={e => setClientDetails({...clientDetails, marcaAparelho: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                               </div>
+                               <div>
+                                   <label className="block text-sm font-medium text-slate-400 mb-1">Modelo</label>
+                                   <input type="text" value={clientDetails.modeloProduto || ""} onChange={e => setClientDetails({...clientDetails, modeloProduto: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-yellow-400 outline-none" />
+                               </div>
                            </div>
                        </div>
                        <div>

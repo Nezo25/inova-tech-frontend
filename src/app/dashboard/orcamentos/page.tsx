@@ -863,7 +863,20 @@ export default function OrcamentosPage() {
                       className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 outline-none cursor-pointer"
                     >
                       <option value="" disabled>-- Buscar Peça no Estoque --</option>
-                      {pecas.filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'APARELHO').map(p => (
+                      {pecas
+                        .filter(p => p.quantidadeEstoque > 0 && p.categoria !== 'APARELHO')
+                        .filter(p => {
+                          if (!selectedClienteId) return true;
+                          const cli = clientes.find(c => c.id.toString() === selectedClienteId);
+                          if (!cli || !cli.modeloProduto) return true;
+                          
+                          const termoBusca = normalizarTexto(cli.modeloProduto);
+                          const isGeral = normalizarTexto(p.modelo || '').includes('geral') || normalizarTexto(p.marca || '').includes('geral');
+                          const isCompatible = normalizarTexto(p.nome).includes(termoBusca) || normalizarTexto(p.modelo || '').includes(termoBusca);
+                          
+                          return isCompatible || isGeral;
+                        })
+                        .map(p => (
                         <option key={p.id} value={p.id}>
                           {p.sku ? `[${p.sku}] ` : ''}{p.nome} {p.marca || p.modelo ? `(${p.marca ? p.marca + ' ' : ''}${p.modelo || ''})` : ''} {p.cor ? `(${p.cor})` : ''} - R$ {p.precoVenda?.toFixed(2)} (Estoque: {p.quantidadeEstoque})
                         </option>

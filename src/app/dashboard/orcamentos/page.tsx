@@ -107,6 +107,11 @@ export default function OrcamentosPage() {
       return;
     }
 
+    const newWindow = window.open('about:blank', '_blank');
+    if (newWindow) {
+      newWindow.document.write("Aguarde, gerando mensagem do WhatsApp...");
+    }
+
     const t = toast.loading("Aprovando...");
     try {
       const res = await fetch(`${getApiUrl()}/api/orcamentos/${orcamentoIdAprovar}/aprovar`, {
@@ -118,14 +123,17 @@ export default function OrcamentosPage() {
         const data = await res.json();
         toast.success('Orçamento aprovado com sucesso! Estoque e financeiro atualizados.', { id: t });
         
-        if (data.whatsappUrl) {
-          window.open(data.whatsappUrl, '_blank');
+        if (data.whatsappUrl && newWindow) {
+          newWindow.location.href = data.whatsappUrl;
+        } else if (newWindow) {
+          newWindow.close();
         }
 
         setOrcamentoIdAprovar('');
         buscarOrcamentos();
         buscarPecas();
       } else {
+        if (newWindow) newWindow.close();
         try {
           const data = await res.json();
           toast.error(data.message || 'Erro ao aprovar. Verifique o estoque.', { id: t, duration: 5000 });
@@ -134,6 +142,7 @@ export default function OrcamentosPage() {
         }
       }
     } catch (error) {
+      if (newWindow) newWindow.close();
       toast.error('Erro de conexão ao aprovar.', { id: t });
     }
   };

@@ -109,7 +109,8 @@ export default function OrcamentosPage() {
 
     const newWindow = window.open('about:blank', '_blank');
     if (newWindow) {
-      newWindow.document.write("Aguarde, gerando mensagem do WhatsApp...");
+      newWindow.document.write("<html><body style='font-family:sans-serif; padding: 20px;'>Aguarde, redirecionando para o WhatsApp...</body></html>");
+      newWindow.document.close();
     }
 
     const t = toast.loading("Aprovando...");
@@ -125,6 +126,12 @@ export default function OrcamentosPage() {
         
         if (data.whatsappUrl && newWindow) {
           newWindow.location.href = data.whatsappUrl;
+          // Fallback just in case location.href gets blocked
+          newWindow.document.body.innerHTML = `
+            <h3>Mensagem gerada com sucesso!</h3>
+            <p>Se o WhatsApp não abrir automaticamente, <a href="${data.whatsappUrl}" target="_blank" style="color: #25D366; font-weight: bold; font-size: 18px;">clique aqui para abrir</a>.</p>
+            <p><small>Você pode fechar esta aba depois.</small></p>
+          `;
         } else if (newWindow) {
           newWindow.close();
         }
